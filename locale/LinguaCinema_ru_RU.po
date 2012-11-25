@@ -1,0 +1,144 @@
+#: ../LinguaCinema.py:165
+msgid "&File"
+msgstr ""
+
+#: ../LinguaCinema.py:163
+msgid "&Open media file\tCtrl+O"
+msgstr ""
+
+#: ../LinguaCinema.py:164
+msgid "&Open subtitles file\tCtrl+S"
+msgstr ""
+
+#: ../LinguaCinema.py:66
+msgid "Audio stream"
+msgstr ""
+
+#: ../LinguaCinema.py:271
+#, python-format
+msgid "Audio stream #%d"
+msgstr ""
+
+#: ../LinguaCinema.py:420
+msgid "Brazilian"
+msgstr ""
+
+#: ../LinguaCinema.py:178 ../LinguaCinema.py:212
+msgid "Choose a file"
+msgstr ""
+
+#: ../LinguaCinema.py:479
+msgid "Continue"
+msgstr ""
+
+#: ../LinguaCinema.py:420
+msgid "Deutch"
+msgstr ""
+
+#: ../LinguaCinema.py:420
+msgid "English"
+msgstr ""
+
+#: ../LinguaCinema.py:420
+msgid "French"
+msgstr ""
+
+#: ../LinguaCinema.py:421
+msgid "Italian"
+msgstr ""
+
+#: ../LinguaCinema.py:603
+msgid "LinguaCinema watch movie and learn language"
+msgstr ""
+
+#: ../LinguaCinema.py:238
+msgid "Media finished!"
+msgstr ""
+
+#: ../LinguaCinema.py:227
+msgid "Media started!"
+msgstr ""
+
+#: ../LinguaCinema.py:163
+msgid "Open media file"
+msgstr ""
+
+#: ../LinguaCinema.py:164
+msgid "Open subtitles"
+msgstr ""
+
+#: ../LinguaCinema.py:141
+msgid "Pause"
+msgstr ""
+
+#: ../LinguaCinema.py:420
+msgid "Portugese"
+msgstr ""
+
+#: ../LinguaCinema.py:278
+msgid "Process started!"
+msgstr ""
+
+#: ../LinguaCinema.py:282
+msgid "Process stopped!"
+msgstr ""
+
+#: ../LinguaCinema.py:420
+msgid "Russian"
+msgstr ""
+
+#: ../LinguaCinema.py:458
+msgid "Source"
+msgstr ""
+
+#: ../LinguaCinema.py:420
+msgid "Spanish"
+msgstr ""
+
+#: ../LinguaCinema.py:149
+msgid "Stop"
+msgstr ""
+
+#: ../LinguaCinema.py:176
+msgid "Subtitles Files (*.srt)|*.srt"
+msgstr ""
+
+#: ../LinguaCinema.py:468
+msgid "Translate"
+msgstr ""
+
+#: ../LinguaCinema.py:316
+msgid "Translate of selected words"
+msgstr ""
+
+#: ../LinguaCinema.py:427
+msgid "Translation of selected text"
+msgstr ""
+
+#: ../LinguaCinema.py:210
+msgid "Video files (avi,mkv,mp4,mov)|*.avi;*.mkv;*.mp4;*.mov"
+msgstr ""
+
+#: ../LinguaCinema.py:551
+msgid "no interjection"
+msgstr ""
+
+#: ../LinguaCinema.py:255
+msgid "pausing..."
+msgstr ""
+
+#: ../LinguaCinema.py:260
+msgid "resuming..."
+msgstr ""
+
+#: ../LinguaCinema.py:466 ../LinguaCinema.py:476
+msgid "ru"
+msgstr ""
+
+#: ../LinguaCinema.py:245
+msgid "stopping..."
+msgstr ""
+
+#: ../LinguaCinema.py:84
+msgid "subtitles"
+msgstr ""
