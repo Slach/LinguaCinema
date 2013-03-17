@@ -1,21 +1,21 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# 
+#
 #   PYTHON MODULE:     MKI18N.PY
 #                      =========
-# 
+#
 #   Abstract:         Make Internationalization (i18n) files for an application.
-# 
+#
 #   Copyright Pierre Rouleau. 2003. Released to public domain.
-# 
+#
 #   Last update: Saturday, November 8, 2003. @ 15:55:18.
-# 
+#
 #   File: ROUP2003N01::C:/dev/python/mki18n.py
-# 
+#
 #   RCS $Header: //software/official/MKS/MKS_SI/TV_NT/dev/Python/rcs/mki18n.py 1.5 2003/11/05 19:40:04 PRouleau Exp $
-# 
+#
 #   Update history:
-# 
+#
 #   - File created: Saturday, June 7, 2003. by Pierre Rouleau
 #   - 10/06/03 rcs : RCS Revision 1.1  2003/06/10 10:06:12  PRouleau
 #   - 10/06/03 rcs : RCS Initial revision
@@ -27,22 +27,22 @@
 #   - 05/11/03 rcs : RCS Revision 1.4  2003/10/22 06:39:31  PRouleau
 #   - 05/11/03 P.R.: [code:fix] : included the unixpath() in this file.
 #   - 08/11/03 rcs : RCS Revision 1.5  2003/11/05 19:40:04  PRouleau
-# 
+#
 #   RCS $Log: $
-# 
-# 
+#
+#
 # -----------------------------------------------------------------------------
-"""                                
-mki18n allows you to internationalize your software.  You can use it to 
+"""
+mki18n allows you to internationalize your software.  You can use it to
 create the GNU .po files (Portable Object) and the compiled .mo files
 (Machine Object).
 
-mki18n module can be used from the command line or from within a script (see 
+mki18n module can be used from the command line or from within a script (see
 the Usage at the end of this page).
 
     Table of Contents
     -----------------
-    
+
     makePO()             -- Build the Portable Object file for the application --
     catPO()              -- Concatenate one or several PO files with the application domain files. --
     makeMO()             -- Compile the Portable Object files into the Machine Object stored in the right location. --
@@ -60,24 +60,24 @@ You can get the gettext tools from the following sites:
      libiconv  ftp site`_ and get version 1.9.1 or later. Get the Windows .ZIP
      files and install the packages inside c:/gnu. All binaries will be stored
      inside  c:/gnu/bin.  Just  put c:/gnu/bin inside your PATH. You will need
-     the following files: 
+     the following files:
 
-      - `gettext-runtime-0.12.1.bin.woe32.zip`_ 
+      - `gettext-runtime-0.12.1.bin.woe32.zip`_
       - `gettext-tools-0.12.1.bin.woe32.zip`_
-      - `libiconv-1.9.1.bin.woe32.zip`_ 
+      - `libiconv-1.9.1.bin.woe32.zip`_
 
 
 .. _GNU libiconv:                            http://www.gnu.org/software/libiconv/
 .. _GNU libiconv ftp site:                   http://www.ibiblio.org/pub/gnu/libiconv/
-.. _gettext-runtime-0.12.1.bin.woe32.zip:    ftp://ftp.gnu.org/gnu/gettext/gettext-runtime-0.12.1.bin.woe32.zip           
-.. _gettext-tools-0.12.1.bin.woe32.zip:      ftp://ftp.gnu.org/gnu/gettext/gettext-tools-0.12.1.bin.woe32.zip 
+.. _gettext-runtime-0.12.1.bin.woe32.zip:    ftp://ftp.gnu.org/gnu/gettext/gettext-runtime-0.12.1.bin.woe32.zip
+.. _gettext-tools-0.12.1.bin.woe32.zip:      ftp://ftp.gnu.org/gnu/gettext/gettext-tools-0.12.1.bin.woe32.zip
 .. _libiconv-1.9.1.bin.woe32.zip:            http://www.ibiblio.org/pub/gnu/libiconv/libiconv-1.9.1.bin.woe32.zip
 
 """
 # -----------------------------------------------------------------------------
 # Module Import
 # -------------
-# 
+#
 import os
 import sys
 import wx
@@ -110,24 +110,24 @@ def getlanguageDict():
 def makePO(applicationDirectoryPath, applicationDomain=None, verbose=0):
     """Build the Portable Object Template file for the application.
 
-    makePO builds the .pot file for the application stored inside 
-    a specified directory by running xgettext for all application source 
-    files.  It finds the name of all files by looking for a file called 'app.fil'. 
+    makePO builds the .pot file for the application stored inside
+    a specified directory by running xgettext for all application source
+    files.  It finds the name of all files by looking for a file called 'app.fil'.
     If this file does not exists, makePo raises an IOError exception.
     By default the application domain (the application
     name) is the same as the directory name but it can be overridden by the
     'applicationDomain' argument.
 
-    makePO always creates a new file called messages.pot.  If it finds files 
-    of the form app_xx.po where 'app' is the application name and 'xx' is one 
-    of the ISO 639 two-letter language codes, makePO resynchronizes those 
-    files with the latest extracted strings (now contained in messages.pot). 
+    makePO always creates a new file called messages.pot.  If it finds files
+    of the form app_xx.po where 'app' is the application name and 'xx' is one
+    of the ISO 639 two-letter language codes, makePO resynchronizes those
+    files with the latest extracted strings (now contained in messages.pot).
     This process updates all line location number in the language-specific
-    .po files and may also create new entries for translation (or comment out 
-    some).  The .po file is not changed, instead a new file is created with 
+    .po files and may also create new entries for translation (or comment out
+    some).  The .po file is not changed, instead a new file is created with
     the .new extension appended to the name of the .po file.
 
-    By default the function does not display what it is doing.  Set the 
+    By default the function does not display what it is doing.  Set the
     verbose argument to 1 to force it to print its commands.
     """
 
@@ -140,14 +140,14 @@ def makePO(applicationDirectoryPath, applicationDomain=None, verbose=0):
     if not os.path.exists('app.fil'):
         raise IOError(2, 'No module file: app.fil')
 
-    # Steps:                                  
+    # Steps:
     #  Use xgettext to parse all application modules
     #  The following switches are used:
-    #  
+    #
     #   -s                          : sort output by string content (easier to use when we need to merge several .po files)
     #   --files-from=app.fil        : The list of files is taken from the file: app.fil
     #   --output=                   : specifies the name of the output file (using a .pot extension)
-    cmd = 'xgettext --package-name="Miro" --msgid-bugs-address="http://lingua-cinema.com/" -s --no-wrap --files-from=app.fil --output=messages.pot'
+    cmd = 'xgettext --msgid-bugs-address="http://lingua-cinema.com/" -s --no-wrap --files-from=app.fil --output=messages.pot'
     if verbose: print cmd
     os.system(cmd)
 
@@ -208,18 +208,18 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
 # -----------------------------------------------------------------------------
 # m a k e M O ( )         -- Compile the Portable Object files into the Machine Object stored in the right location. --
 # ^^^^^^^^^^^^^^^
-# 
+#
 def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=None, verbose=0, forceEnglish=0):
     """Compile the Portable Object files into the Machine Object stored in the right location.
 
-    makeMO converts all translated language-specific PO files located inside 
-    the  application directory into the binary .MO files stored inside the 
+    makeMO converts all translated language-specific PO files located inside
+    the  application directory into the binary .MO files stored inside the
     LC_MESSAGES sub-directory for the found locale files.
 
-    makeMO searches for all files that have a name of the form 'app_xx.po' 
-    inside the application directory specified by the first argument.  The 
-    'app' is the application domain name (that can be specified by the 
-    applicationDomain argument or is taken from the directory name). The 'xx' 
+    makeMO searches for all files that have a name of the form 'app_xx.po'
+    inside the application directory specified by the first argument.  The
+    'app' is the application domain name (that can be specified by the
+    applicationDomain argument or is taken from the directory name). The 'xx'
     corresponds to one of the ISO 639 two-letter language codes.
 
     makeMo stores the resulting files inside a sub-directory of `targetDir`
@@ -285,7 +285,7 @@ def printUsage(errorMsg=None):
     #                                                                                #
     #   You must specify one of the -p or -m option to perform the work.  You can    #
     #   specify the path of the target application.  If you leave it out mki18n      #
-    #   will use the current directory as the application main directory.            #        
+    #   will use the current directory as the application main directory.            #
     #                                                                                #
     ##################################################################################"""
     if errorMsg:
@@ -294,7 +294,7 @@ def printUsage(errorMsg=None):
 # -----------------------------------------------------------------------------
 # f i l e B a s e O f ( )         -- Return base name of filename --
 # ^^^^^^^^^^^^^^^^^^^^^^^
-# 
+#
 def fileBaseOf(filename, withPath=0):
     """fileBaseOf(filename,withPath) ---> string
 
@@ -336,7 +336,7 @@ def fileBaseOf(filename, withPath=0):
 # -----------------------------------------------------------------------------
 # m k d i r ( )         -- Create a directory (and possibly the entire tree) --
 # ^^^^^^^^^^^^^
-# 
+#
 def mkdir(directory):
     """Create a directory (and possibly the entire tree).
 
@@ -379,7 +379,7 @@ def mkdir(directory):
 
 # u n i x p a t h ( )         -- Return a path name that contains Unix separator. --
 # ^^^^^^^^^^^^^^^^^^^
-# 
+#
 def unixpath(thePath):
     r"""Return a path name that contains Unix separator.
 
@@ -396,11 +396,11 @@ def unixpath(thePath):
     else:
         return thePath.replace(os.sep, '/')
 
-# ----------------------------------------------------------------------------- 
+# -----------------------------------------------------------------------------
 
 # S c r i p t   e x e c u t i o n               -- Runs when invoked from the command line --
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# 
+#
 if __name__ == "__main__":
     import getopt     # command line parsing
 

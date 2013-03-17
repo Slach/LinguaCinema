@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Miro\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://lingua-cinema.com/\n"
-"POT-Creation-Date: 2012-11-25 16:01+0400\n"
+"POT-Creation-Date: 2013-03-17 22:54+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,145 +16,117 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../LinguaCinema.py:165
+#: ../LinguaCinema.py:167
 msgid "&File"
 msgstr ""
 
-#: ../LinguaCinema.py:163
+#: ../LinguaCinema.py:165
 msgid "&Open media file\tCtrl+O"
 msgstr ""
 
-#: ../LinguaCinema.py:164
+#: ../LinguaCinema.py:166
 msgid "&Open subtitles file\tCtrl+S"
 msgstr ""
 
-#: ../LinguaCinema.py:66
+#: ../LinguaCinema.py:67
 msgid "Audio stream"
 msgstr ""
 
-#: ../LinguaCinema.py:271
+#: ../LinguaCinema.py:274
 #, python-format
 msgid "Audio stream #%d"
 msgstr ""
 
-#: ../LinguaCinema.py:420
+#: ../LinguaCinema.py:441
 msgid "Brazilian"
 msgstr ""
 
-#: ../LinguaCinema.py:178 ../LinguaCinema.py:212
+#: ../LinguaCinema.py:180 ../LinguaCinema.py:214
 msgid "Choose a file"
 msgstr ""
 
-#: ../LinguaCinema.py:479
+#: ../LinguaCinema.py:506
 msgid "Continue"
 msgstr ""
 
-#: ../LinguaCinema.py:420
+#: ../LinguaCinema.py:441
 msgid "Deutch"
 msgstr ""
 
-#: ../LinguaCinema.py:420
+#: ../LinguaCinema.py:441
 msgid "English"
 msgstr ""
 
-#: ../LinguaCinema.py:420
+#: ../LinguaCinema.py:441
 msgid "French"
 msgstr ""
 
-#: ../LinguaCinema.py:421
+#: ../LinguaCinema.py:442
 msgid "Italian"
 msgstr ""
 
-#: ../LinguaCinema.py:603
+#: ../LinguaCinema.py:639
 msgid "LinguaCinema watch movie and learn language"
 msgstr ""
 
-#: ../LinguaCinema.py:238
-msgid "Media finished!"
-msgstr ""
-
-#: ../LinguaCinema.py:227
-msgid "Media started!"
-msgstr ""
-
-#: ../LinguaCinema.py:163
+#: ../LinguaCinema.py:165
 msgid "Open media file"
 msgstr ""
 
-#: ../LinguaCinema.py:164
+#: ../LinguaCinema.py:166
 msgid "Open subtitles"
 msgstr ""
 
-#: ../LinguaCinema.py:141
+#: ../LinguaCinema.py:143
 msgid "Pause"
 msgstr ""
 
-#: ../LinguaCinema.py:420
+#: ../LinguaCinema.py:441
 msgid "Portugese"
 msgstr ""
 
-#: ../LinguaCinema.py:278
-msgid "Process started!"
-msgstr ""
-
-#: ../LinguaCinema.py:282
-msgid "Process stopped!"
-msgstr ""
-
-#: ../LinguaCinema.py:420
+#: ../LinguaCinema.py:441
 msgid "Russian"
 msgstr ""
 
-#: ../LinguaCinema.py:458
+#: ../LinguaCinema.py:484
 msgid "Source"
 msgstr ""
 
-#: ../LinguaCinema.py:420
+#: ../LinguaCinema.py:441
 msgid "Spanish"
 msgstr ""
 
-#: ../LinguaCinema.py:149
+#: ../LinguaCinema.py:151
 msgid "Stop"
 msgstr ""
 
-#: ../LinguaCinema.py:176
+#: ../LinguaCinema.py:178
 msgid "Subtitles Files (*.srt)|*.srt"
 msgstr ""
 
-#: ../LinguaCinema.py:468
+#: ../LinguaCinema.py:495
 msgid "Translate"
 msgstr ""
 
-#: ../LinguaCinema.py:316
-msgid "Translate of selected words"
-msgstr ""
-
-#: ../LinguaCinema.py:427
+#: ../LinguaCinema.py:448
 msgid "Translation of selected text"
 msgstr ""
 
-#: ../LinguaCinema.py:210
+#: ../LinguaCinema.py:212
 msgid "Video files (avi,mkv,mp4,mov)|*.avi;*.mkv;*.mp4;*.mov"
 msgstr ""
 
-#: ../LinguaCinema.py:551
+#: ../LinguaCinema.py:492
+msgid "en"
+msgstr ""
+
+#: ../LinguaCinema.py:587
 msgid "no interjection"
 msgstr ""
 
-#: ../LinguaCinema.py:255
-msgid "pausing..."
-msgstr ""
-
-#: ../LinguaCinema.py:260
-msgid "resuming..."
-msgstr ""
-
-#: ../LinguaCinema.py:466 ../LinguaCinema.py:476
+#: ../LinguaCinema.py:503
 msgid "ru"
-msgstr ""
-
-#: ../LinguaCinema.py:245
-msgid "stopping..."
 msgstr ""
 
 #: ../LinguaCinema.py:84
