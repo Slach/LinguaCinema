@@ -147,7 +147,7 @@ def makePO(applicationDirectoryPath, applicationDomain=None, verbose=0):
     #   -s                          : sort output by string content (easier to use when we need to merge several .po files)
     #   --files-from=app.fil        : The list of files is taken from the file: app.fil
     #   --output=                   : specifies the name of the output file (using a .pot extension)
-    cmd = 'xgettext --msgid-bugs-address="http://lingua-cinema.com/" -s --no-wrap --files-from=app.fil --output=messages.pot'
+    cmd = 'xgettext --from-code=utf-8 --msgid-bugs-address="http://lingua-cinema.com/" -s --no-wrap --files-from=app.fil --output=messages.pot'
     if verbose: print cmd
     os.system(cmd)
 

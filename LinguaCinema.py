@@ -13,7 +13,9 @@ import wx.lib.buttons as buttons
 import urllib
 import urllib2
 import json
+import LinguaSubDownloader
 from pysrt import SubRipFile
+
 
 if getattr(sys, 'frozen', None):
     linguaBaseDir = sys._MEIPASS
@@ -54,7 +56,7 @@ class LinguaFrame(wx.Frame):
         self.build_controls(controlSizer)
 
         self.mplayer = mpc.MplayerCtrl(self.panel, -1, mplayerPath,
-                                       mplayer_args=[u'--consolecontrols', u'--no-autosub', u'--identify'])
+                                       mplayer_args=[u'--consolecontrols', u'--no-autosub', u'--nosub', u'--identify', u'--no-fontconfig'])
 
         # create volume control
         self.volumeCtrl = wx.Slider(self.panel)
@@ -171,6 +173,24 @@ class LinguaFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_add_subtitle, add_subtitle_menu_item)
 
     #----------------------------------------------------------------------
+    def open_subtitle(self, path):
+        self.srtFile = path
+        try:
+            self.srtParsed = SubRipFile.open(self.srtFile)
+        except UnicodeDecodeError:
+            self.srtParsed = SubRipFile.open(self.srtFile, encoding='windows-1251')
+
+        self.srtIndex = 0
+
+        if self.playbackTimer.IsRunning() or not self.mediaFile is None:
+            offset = self.timelineCtrl.GetValue()
+            while self.srtIndex < len(self.srtParsed):
+                if self.srtParsed[self.srtIndex].start.ordinal <= offset * 1000 <= self.srtParsed[self.srtIndex].end.ordinal:
+                    self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
+                    break
+                self.srtIndex += 1
+
+    #----------------------------------------------------------------------
     def on_add_subtitle(self, event):
         """
         Add a *.srt file
@@ -185,23 +205,9 @@ class LinguaFrame(wx.Frame):
         )
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
+            dlg.Destroy()
             self.currentFolder = os.path.dirname(path[0])
-            self.srtFile = path
-            try:
-                self.srtParsed = SubRipFile.open(self.srtFile)
-            except UnicodeDecodeError:
-                self.srtParsed = SubRipFile.open(self.srtFile, encoding='windows-1251')
-
-            self.srtIndex = 0
-
-            if self.playbackTimer.IsRunning():
-                offset = self.timelineCtrl.GetValue()
-                while self.srtIndex < len(self.srtParsed):
-                    if self.srtParsed[self.srtIndex].start.ordinal <= offset * 1000 <= self.srtParsed[self.srtIndex].end.ordinal:
-                        self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
-                        break
-                    self.srtIndex += 1
-
+            self.open_subtitle(path)
             self.panel.SetFocus()
 
     #----------------------------------------------------------------------
@@ -219,8 +225,18 @@ class LinguaFrame(wx.Frame):
         )
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
+            dlg.Destroy()
             self.currentFolder = os.path.dirname(path[0])
-            self.mediaFile = '"%s"' % path.replace("\\", "/")
+            #self.mediaFile = '"%s"' % path.replace("\\", "\\")
+            self.mediaFile = path
+            srtFile = os.path.splitext(self.mediaFile)[0] + '.srt'
+            if (os.path.isfile(srtFile)):
+                self.open_subtitle(srtFile)
+            else:
+                dlg = wx.MessageDialog(self, _('Subtitle file not found download it from http://opensubtitles.org?'), _('%s not exists') % (srtFile), wx.YES_NO | wx.ICON_QUESTION)
+                if dlg.ShowModal() == wx.ID_YES:
+                    LinguaSubDownloader.DownloadSubtitleForMovie(self.mediaFile,'en')
+                dlg.Destroy()
             self.mplayer.Loadfile(self.mediaFile)
 
         self.panel.SetFocus()
@@ -241,6 +257,7 @@ class LinguaFrame(wx.Frame):
         #print _('Media finished!')
         self.playbackTimer.Stop()
         self.panel.SetFocus()
+        self.srtIndex = 0
 
     #----------------------------------------------------------------------
     def on_stop(self, event):
