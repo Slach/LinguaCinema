@@ -31,6 +31,13 @@ _ = wx.GetTranslation
 class LinguaFrame(wx.Frame):
     #----------------------------------------------------------------------
     def __init__(self, parent, id, title, mplayerPath):
+        """
+
+        @param parent:
+        @param id:
+        @param title:
+        @param mplayerPath:
+        """
         wx.Frame.__init__(self, parent=parent, id=id, title=title, size=wx.Size(800, 600))
         self.panel = wx.Panel(self)
 
@@ -56,7 +63,11 @@ class LinguaFrame(wx.Frame):
         self.build_controls(controlSizer)
 
         self.mplayer = mpc.MplayerCtrl(self.panel, -1, mplayerPath,
-                                       mplayer_args=[u'--consolecontrols', u'--no-autosub', u'--nosub', u'--identify', u'--no-fontconfig'])
+                                       mplayer_args=[
+                                           u'--consolecontrols', u'--no-autosub',
+                                           u'--nosub', u'--identify', u'--no-fontconfig'
+                                       ]
+        )
 
         # create volume control
         self.volumeCtrl = wx.Slider(self.panel)
@@ -185,7 +196,8 @@ class LinguaFrame(wx.Frame):
         if self.playbackTimer.IsRunning() or not self.mediaFile is None:
             offset = self.timelineCtrl.GetValue()
             while self.srtIndex < len(self.srtParsed):
-                if self.srtParsed[self.srtIndex].start.ordinal <= offset * 1000 <= self.srtParsed[self.srtIndex].end.ordinal:
+                if self.srtParsed[self.srtIndex].start.ordinal <= offset * 1000 <= self.srtParsed[
+                    self.srtIndex].end.ordinal:
                     self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
                     break
                 self.srtIndex += 1
@@ -227,15 +239,16 @@ class LinguaFrame(wx.Frame):
             path = dlg.GetPath()
             dlg.Destroy()
             self.currentFolder = os.path.dirname(path[0])
-            #self.mediaFile = '"%s"' % path.replace("\\", "\\")
-            self.mediaFile = path
-            srtFile = os.path.splitext(self.mediaFile)[0] + '.srt'
+            self.mediaFile = '"%s"' % path.replace("\\", "/")
+            srtFile = (os.path.splitext(self.mediaFile)[0] + '.srt').replace("/", '\\')
             if (os.path.isfile(srtFile)):
                 self.open_subtitle(srtFile)
             else:
-                dlg = wx.MessageDialog(self, _('Subtitle file not found download it from http://opensubtitles.org?'), _('%s not exists') % (srtFile), wx.YES_NO | wx.ICON_QUESTION)
+                dlg = wx.MessageDialog(self, _('Subtitle file not found download it from http://opensubtitles.org?'),
+                                       _('%s not exists') % (srtFile), wx.YES_NO | wx.ICON_QUESTION)
                 if dlg.ShowModal() == wx.ID_YES:
-                    LinguaSubDownloader.DownloadSubtitleForMovie(self.mediaFile,'en')
+                    print self.mediaFile.replace("/", '\\').strip('"')
+                    LinguaSubDownloader.DownloadSubtitleForMovie(self.mediaFile.replace("/", '\\').strip('"'), 'en')
                 dlg.Destroy()
             self.mplayer.Loadfile(self.mediaFile)
 

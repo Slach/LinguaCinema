@@ -1,17 +1,21 @@
+#===================================================================================================
+# Original code here https://github.com/nicoddemus/ss
+#===================================================================================================
 from __future__ import with_statement
 import xmlrpclib
 import difflib
 import os
-import calculate_hash
+import sys
+import struct
 import gzip
 import urllib
 import tempfile
 import shutil
-import time
-import optparse
+
 
 #===================================================================================================
 # QueryOpenSubtitles
+# @todo added LinguaCinema Registered User Agent
 #===================================================================================================
 def QueryOpenSubtitles(movie_filenames, language):
     uri = 'http://api.opensubtitles.org/xml-rpc'
@@ -25,8 +29,8 @@ def QueryOpenSubtitles(movie_filenames, language):
         for movie_filename in movie_filenames:
             search_queries = [
                 dict(
-                    moviehash=calculate_hash.CalculateHashForFile(movie_filename),
-                    moviebytesize=os.path.getsize(movie_filename),
+                    moviehash=CalculateHashForFile(movie_filename),
+                    moviebytesize=str(os.path.getsize(movie_filename)),
                     sublanguageid=language,
                 ),
                 dict(
@@ -50,7 +54,6 @@ def QueryOpenSubtitles(movie_filenames, language):
 # FindBestSubtitleMatches
 #===================================================================================================
 def FindBestSubtitleMatches(movie_filenames, language):
-
     all_search_results = QueryOpenSubtitles(movie_filenames, language)
 
     for movie_filename in movie_filenames:
@@ -122,16 +125,15 @@ def DownloadSub(subtitle_url, subtitle_filename):
         shutil.rmtree(tempdir)
 
 
-
 #===================================================================================================
 # FindMovieFiles
 #===================================================================================================
 def FindMovieFiles(input_names, recursive=False):
-    extensions = set(['.avi', '.mp4', '.mpg', '.mkv'])
+    extensions = {'.avi', '.mp4', '.mpg', '.mkv'}
     returned = set()
 
     for input_name in input_names:
-
+        print input_name
         if os.path.isfile(input_name) and input_name not in returned:
             yield input_name
             returned.add(input_name)
@@ -154,10 +156,115 @@ def FindMovieFiles(input_names, recursive=False):
 #===================================================================================================
 def HasSubtitle(filename):
     # list of subtitle formats obtained from opensubtitles' advanced search page.
-    formats = ['.sub', '.srt', '.ssa', '.smi', '.mpl']
+    # formats = ['.sub', '.srt', '.ssa', '.smi', '.mpl']
+    formats = ['.srt']
     basename = os.path.splitext(filename)[0]
-    for format in formats:
-        if os.path.isfile(basename + format):
+    for ext in formats:
+        if os.path.isfile(basename + ext):
             return True
 
     return False
+
+
+#===================================================================================================
+# CalculateHashForFile
+#===================================================================================================
+def CalculateHashForFile(name):
+    """
+    Calculates the hash for the given filename.
+
+    Algorithm from: http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+
+    @param name: str
+        Path to the file
+
+    @return: str
+        The calculated hash code, as an hex string.
+    """
+    longlongformat = 'q'  # long long
+    bytesize = struct.calcsize(longlongformat)
+
+    f = open(name, "rb")
+
+    filesize = os.path.getsize(name)
+    movie_hash = filesize
+
+    if filesize < 65536 * 2:
+        return "SizeError"
+
+    for x in range(65536 / bytesize):
+        movie_buffer = f.read(bytesize)
+        (l_value,) = struct.unpack(longlongformat, movie_buffer)
+        movie_hash += l_value
+        movie_hash = movie_hash & 0xFFFFFFFFFFFFFFFF #to remain as 64bit number
+
+    f.seek(max(0, filesize - 65536), 0)
+    for x in range(65536 / bytesize):
+        movie_buffer = f.read(bytesize)
+        (l_value,) = struct.unpack(longlongformat, movie_buffer)
+        movie_hash += l_value
+        movie_hash = movie_hash & 0xFFFFFFFFFFFFFFFF
+
+    f.close()
+    returnedhash = "%016x" % movie_hash
+    return returnedhash
+
+
+#===================================================================================================
+# DownloadSubtitleForMovie
+#===================================================================================================
+def DownloadSubtitleForMovie(filename, language):
+    input_filenames = list(FindMovieFiles([filename], recursive=False))
+    if not input_filenames:
+        sys.stdout.write('No files to search subtitles for. Aborting.\n')
+        return False
+
+    skipped_filenames = []
+    new_input_filenames = []
+    for input_filename in input_filenames:
+        if HasSubtitle(input_filename):
+            skipped_filenames.append(input_filename)
+        else:
+            new_input_filenames.append(input_filename)
+    input_filenames = new_input_filenames
+
+    def PrintStatus(text, status):
+        spaces = 70 - len(text)
+        if spaces < 2:
+            spaces = 2
+        sys.stdout.write('%s%s%s\n' % (text, ' ' * spaces, status))
+
+
+    sys.stdout.write('Language: %s\n' % language)
+    if skipped_filenames:
+        print 'Skipping %d files that already have subtitles.' % len(skipped_filenames)
+
+    if not input_filenames:
+        return False
+
+    sys.stdout.write('Querying OpenSubtitles.org for %d file(s)...\n' % len(input_filenames))
+    sys.stdout.write('\n')
+
+    matches = []
+    for (movie_filename, subtitle_url, subtitle_ext) in sorted(
+            FindBestSubtitleMatches(input_filenames, language=language)):
+        if subtitle_url:
+            status = 'OK'
+        else:
+            status = 'No matches found.'
+
+        PrintStatus('- %s' % os.path.basename(movie_filename), status)
+
+        if subtitle_url:
+            subtitle_filename = ObtainSubtitleFilename(movie_filename, language, subtitle_ext)
+            matches.append((movie_filename, subtitle_url, subtitle_ext, subtitle_filename))
+
+    if not matches:
+        return False
+
+    sys.stdout.write('\n')
+    sys.stdout.write('Downloading...\n')
+    for (movie_filename, subtitle_url, subtitle_ext, subtitle_filename) in matches:
+        DownloadSub(subtitle_url, subtitle_filename)
+        PrintStatus(' - %s' % os.path.basename(subtitle_filename), 'DONE')
+    return True

@@ -19,6 +19,11 @@ a.datas += [
             ('bitmaps/flags/it.png', '..\\Lingualeo_player\\bitmaps\\flags\\it.png',  'DATA'),
             ('bitmaps/flags/pt-pt.png', '..\\Lingualeo_player\\bitmaps\\flags\\pt-pt.png',  'DATA'),
             ('bitmaps/flags/pt-br.png', '..\\Lingualeo_player\\bitmaps\\flags\\pt-br.png',  'DATA'),
+            ('bitmaps/flags/en.png', '..\\Lingualeo_player\\bitmaps\\flags\\en.png',  'DATA'),
+            ('bitmaps/flags/en.png', '..\\Lingualeo_player\\bitmaps\\flags\\en.png',  'DATA'),
+            ('locale/ru_RU/LC_MESSAGES/LinguaCinema.mo', '..\\Lingualeo_player\\locale\\ru_RU\\LC_MESSAGES\\LinguaCinema.mo',  'DATA'),
+            ('locale/en_US/LC_MESSAGES/LinguaCinema.mo', '..\\Lingualeo_player\\locale\\en_US\\LC_MESSAGES\\LinguaCinema.mo',  'DATA'),
+            ('locale/pt_BR/LC_MESSAGES/LinguaCinema.mo', '..\\Lingualeo_player\\locale\\pt_BR\\LC_MESSAGES\\LinguaCinema.mo',  'DATA'),
            ]
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
