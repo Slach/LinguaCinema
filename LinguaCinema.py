@@ -42,6 +42,7 @@ class LinguaFrame(wx.Frame):
         self.panel = wx.Panel(self)
 
         sp = wx.StandardPaths.Get()
+        self.SetIcon(wx.Icon("favicon.ico", wx.BITMAP_TYPE_ICO))
         self.currentFolder = linguaBaseDir if not getattr(sys, 'frozen', None) else sp.GetDocumentsDir()
         self.currentVolume = 50
         self.mediaFile = None
@@ -93,7 +94,7 @@ class LinguaFrame(wx.Frame):
         self.playbackTimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_update_playback)
 
-        #create subtitle contorl
+        #create subtitle control
         self.subtitle = wx.TextCtrl(self.panel, -1, name=_('subtitles'),
                                     style=wx.TE_READONLY | wx.TE_CENTER | wx.TE_WORDWRAP | wx.TE_MULTILINE)
         self.subtitle.SetBackgroundColour(wx.Color(0, 0, 0))
@@ -147,8 +148,16 @@ class LinguaFrame(wx.Frame):
     #----------------------------------------------------------------------
     def build_controls(self, controlSizer):
         """
-        Builds the audio bar controls
+        Builds the playback controls
         """
+        self.buttons['prev'] = self.build_btn(
+            png='player_prev.png',
+            handler=self.on_prev,
+            title=_("Previous phrase"),
+            name='prev',
+            builder=buttons.GenBitmapButton,
+            sizer=controlSizer)
+
         self.buttons['pause'] = self.build_btn(
             png='player_pause.png',
             png_toggle='player_play.png',
@@ -163,6 +172,16 @@ class LinguaFrame(wx.Frame):
             handler=self.on_stop,
             title=_("Stop"),
             name='stop',
+            builder=buttons.GenBitmapButton,
+            sizer=controlSizer)
+
+
+
+        self.buttons['next'] = self.build_btn(
+            png='player_next.png',
+            handler=self.on_next,
+            title=_("Next phrase"),
+            name='next',
             builder=buttons.GenBitmapButton,
             sizer=controlSizer)
 
@@ -248,7 +267,7 @@ class LinguaFrame(wx.Frame):
                                        _('%s not exists') % (srtFile), wx.YES_NO | wx.ICON_QUESTION)
                 if dlg.ShowModal() == wx.ID_YES:
                     print self.mediaFile.replace("/", '\\').strip('"')
-                    LinguaSubDownloader.DownloadSubtitleForMovie(self.mediaFile.replace("/", '\\').strip('"'), 'en')
+                    LinguaSubDownloader.DownloadSubtitleForMovie(self.mediaFile.replace("/", '\\').strip('"'), 'eng')
                 dlg.Destroy()
             self.mplayer.Loadfile(self.mediaFile)
 
@@ -280,6 +299,29 @@ class LinguaFrame(wx.Frame):
         self.mediaFile = None
         self.srtIndex = 0
         self.subtitle.SetValue("")
+
+    #----------------------------------------------------------------------
+    def change_phrase(self):
+        if (not self.srtFile is None) and (not self.srtParsed is None):
+            offset = self.srtParsed[self.srtIndex].start.ordinal / 1000
+            self.timelineCtrl.SetValue(offset)
+            secsPlayed = time.strftime('%M:%S', time.gmtime(offset))
+            self.trackCounter.SetLabel(secsPlayed)
+            self.mplayer.SetProperty('time_pos', offset)
+            self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
+            self.panel.SetFocus()
+
+    #----------------------------------------------------------------------
+    def on_next(self, event):
+        if self.playbackTimer.IsRunning() and not self.srtFile is None and self.srtIndex < len(self.srtParsed):
+            self.srtIndex += 1
+            self.change_phrase()
+
+    #----------------------------------------------------------------------
+    def on_prev(self, event):
+        if self.playbackTimer.IsRunning() and not self.srtFile is None and self.srtIndex > 0:
+            self.srtIndex -= 1
+            self.change_phrase()
 
     #----------------------------------------------------------------------
     def on_pause(self, event):

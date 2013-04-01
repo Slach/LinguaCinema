@@ -175,6 +175,7 @@ def CalculateHashForFile(name):
 
     Algorithm from: http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
+    @rtype : float
     @param name: str
         Path to the file
 
@@ -196,14 +197,15 @@ def CalculateHashForFile(name):
         movie_buffer = f.read(bytesize)
         (l_value,) = struct.unpack(longlongformat, movie_buffer)
         movie_hash += l_value
-        movie_hash = movie_hash & 0xFFFFFFFFFFFFFFFF #to remain as 64bit number
+        #to remain as 64bit number
+        movie_hash &= 0xFFFFFFFFFFFFFFFF
 
     f.seek(max(0, filesize - 65536), 0)
     for x in range(65536 / bytesize):
         movie_buffer = f.read(bytesize)
         (l_value,) = struct.unpack(longlongformat, movie_buffer)
         movie_hash += l_value
-        movie_hash = movie_hash & 0xFFFFFFFFFFFFFFFF
+        movie_hash &= 0xFFFFFFFFFFFFFFFF
 
     f.close()
     returnedhash = "%016x" % movie_hash
@@ -214,6 +216,12 @@ def CalculateHashForFile(name):
 # DownloadSubtitleForMovie
 #===================================================================================================
 def DownloadSubtitleForMovie(filename, language):
+    def PrintStatus(text, status):
+        spaces = 70 - len(text)
+        if spaces < 2:
+            spaces = 2
+        sys.stdout.write('%s%s%s\n' % (text, ' ' * spaces, status))
+
     input_filenames = list(FindMovieFiles([filename], recursive=False))
     if not input_filenames:
         sys.stdout.write('No files to search subtitles for. Aborting.\n')
@@ -227,13 +235,6 @@ def DownloadSubtitleForMovie(filename, language):
         else:
             new_input_filenames.append(input_filename)
     input_filenames = new_input_filenames
-
-    def PrintStatus(text, status):
-        spaces = 70 - len(text)
-        if spaces < 2:
-            spaces = 2
-        sys.stdout.write('%s%s%s\n' % (text, ' ' * spaces, status))
-
 
     sys.stdout.write('Language: %s\n' % language)
     if skipped_filenames:

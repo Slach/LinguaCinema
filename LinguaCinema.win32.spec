@@ -10,6 +10,7 @@ a.datas += [
             ('bitmaps/player_stop.png', '..\\Lingualeo_player\\bitmaps\\player_stop.png',  'DATA'),
             ('bitmaps/player_pause.png', '..\\Lingualeo_player\\bitmaps\\player_pause.png',  'DATA'),
             ('mplayer2.exe', '..\\Lingualeo_player\\mplayer2.exe',  'DATA'),
+            ('favicon.ico', '..\\Lingualeo_player\\favicon.ico',  'DATA'),
             ('mplayer/subfont.ttf', '..\\Lingualeo_player\\mplayer\\subfont.ttf',  'DATA'),
             ('bitmaps/flags/en.png', '..\\Lingualeo_player\\bitmaps\\flags\\en.png',  'DATA'),
             ('bitmaps/flags/ru.png', '..\\Lingualeo_player\\bitmaps\\flags\\ru.png',  'DATA'),
@@ -32,7 +33,8 @@ exe = EXE(pyz,
           name=os.path.join('build\\pyi.win32\\LinguaCinema', 'LinguaCinema.exe'),
           debug=False,
           strip=None,
-          upx=True,
+          upx=False,
+          icon="favicon.ico",
           console=True )
 
 coll = COLLECT(exe,

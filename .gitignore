@@ -1,6 +1,9 @@
 /.idea/
+/install/
 /build/
 /dist/
 *.avi
 *.srt
 *.mo
+*.pyc
+*.log
