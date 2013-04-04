@@ -129,7 +129,7 @@ def DownloadSub(subtitle_url, subtitle_filename):
 # FindMovieFiles
 #===================================================================================================
 def FindMovieFiles(input_names, recursive=False):
-    extensions = {'.avi', '.mp4', '.mpg', '.mkv'}
+    extensions = ['.avi', '.mp4', '.mpg', '.mkv']
     returned = set()
 
     for input_name in input_names:
