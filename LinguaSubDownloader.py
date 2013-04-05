@@ -20,7 +20,7 @@ import shutil
 def QueryOpenSubtitles(movie_filenames, language):
     uri = 'http://api.opensubtitles.org/xml-rpc'
     server = xmlrpclib.Server(uri, verbose=0, allow_none=True, use_datetime=True)
-    login_info = server.LogIn('', '', 'en', 'OS Test User Agent')
+    login_info = server.LogIn('LinguaCinema', 'LinguaCinema', 'en', 'LinguaCinema')
     token = login_info['token']
 
     try:
