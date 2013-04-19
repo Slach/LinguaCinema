@@ -7,6 +7,7 @@ import re
 import time
 import gettext
 import wx
+import wx.html
 import wx.combo as combo
 import MplayerCtrl as mpc
 import wx.lib.buttons as buttons
@@ -14,6 +15,7 @@ import urllib
 import urllib2
 import cookielib
 import json
+import ConfigParser
 import LinguaSubDownloader
 from pysrt import SubRipFile
 
@@ -95,11 +97,12 @@ class LinguaFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.on_update_playback)
 
         #create subtitle control
-        self.subtitle = wx.TextCtrl(self.panel, -1, name=_('subtitles'),
+        self.subtitle = wx.html.HtmlWindow(self.panel, -1, name=_('subtitles'),
                                     style=wx.TE_READONLY | wx.TE_CENTER | wx.TE_WORDWRAP | wx.TE_MULTILINE)
         self.subtitle.SetBackgroundColour(wx.Color(0, 0, 0))
         self.subtitle.SetForegroundColour(wx.Color(255, 255, 255))
-        self.subtitle.SetValue('')
+        self.subtitle.SetPage('<body bgcolor="#000000"></body>')
+        self.subtitle.SetFonts('Consolas','Consolas')
         self.subtitle.SetMinSize(wx.Size(-1, 100))
         self.subtitle.SetFont(wx.Font(14, 74, 90, 90, False, "Consolas"))
 
@@ -121,7 +124,7 @@ class LinguaFrame(wx.Frame):
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_mouse_wheel)
         self.Bind(wx.EVT_CLOSE, self.on_close_window)
 
-        self.subtitle.Bind(wx.EVT_LEFT_UP, self.on_subtitle_click)
+        self.subtitle.Bind(wx.html.EVT_HTML_CELL_CLICKED, self.on_subtitle_click)
 
         self.SetMinSize(wx.Size(1000, 700))
         self.panel.Layout()
@@ -218,6 +221,10 @@ class LinguaFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_prev, prev_menu_item)
         self.Bind(wx.EVT_MENU, self.on_replay, replay_menu_item)
 
+    #----------------------------------------------------------------------
+    def subtitle_setpage(self,text):
+        html = '<body bgcolor="#000000"><center><font face="consolas" color="#ffffff" size="+2">' + text + '</font></center></body>'
+        self.subtitle.SetPage(html)
 
     #----------------------------------------------------------------------
     def open_subtitle(self, path):
@@ -236,7 +243,7 @@ class LinguaFrame(wx.Frame):
                 start = self.srtParsed[self.srtIndex].start
                 end = self.srtParsed[self.srtIndex].end.ordinal
                 if start <= offset * 1000 <= end:
-                    self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
+                    self.subtitle_setpage(self.srtParsed[self.srtIndex].text)
                     return
                 self.srtIndex += 1
 
@@ -328,7 +335,7 @@ class LinguaFrame(wx.Frame):
         self.srtFile = None
         self.srtParsed = None
         self.timelineCtrl.SetValue(0)
-        self.subtitle.SetValue("")
+        self.subtitle_setpage("")
 
     #----------------------------------------------------------------------
     def change_phrase(self):
@@ -338,7 +345,7 @@ class LinguaFrame(wx.Frame):
             secsPlayed = time.strftime('%M:%S', time.gmtime(offset))
             self.trackCounter.SetLabel(secsPlayed)
             self.mplayer.SetProperty('time_pos', offset)
-            self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
+            self.subtitle_setpage(self.srtParsed[self.srtIndex].text)
             self.panel.SetFocus()
 
     #----------------------------------------------------------------------
@@ -410,6 +417,11 @@ class LinguaFrame(wx.Frame):
 
     #----------------------------------------------------------------------
     def on_subtitle_click(self, event):
+        """
+        when click on html window need show popup with LinguaLeoDialog
+        @param wx.html.HtmlCellEvent event:
+        @return:
+        """
         need_play = False
         if self.playbackTimer.IsRunning():
             self.on_pause(event)
@@ -417,33 +429,21 @@ class LinguaFrame(wx.Frame):
 
         if self.isTranslateDialogShowed:
             return
+
         word = ''
-        value = self.subtitle.GetValue()
-        if value:
-            selection = self.subtitle.GetStringSelection()
+        selection = self.subtitle.SelectionToText()
+        if not selection is None and len(selection) > 0:
+            word = selection.replace(u"\n", " ")
+        else:
+            word = event.GetCell().ConvertToText(wx.html.HtmlSelection())
 
-            if not selection is None and len(selection) > 0:
-                word = selection.replace(u"\n", " ")
-            else:
-                position = event.GetPosition()
-                (res, hitpos) = self.subtitle.HitTestPos(position)
-                (col, line) = self.subtitle.PositionToXY(hitpos)
-                text_line = self.subtitle.GetLineText(line)
-
-                if not text_line is None and len(text_line) > 0:
-                    r_space = text_line.find(' ', col)
-                    r_space = r_space if r_space != -1 else len(text_line)
-                    word = text_line[0:r_space]
-                    l_space = word.rfind(' ')
-                    word = word[l_space:] if l_space != -1 else word
-
-            if word.strip(" \n\r\t") != "":
-                dlg = LinguaLeoDialog(self, word)
-                self.isTranslateDialogShowed = True
-                dlg.Raise()
-                dlg.ShowModal()
-                dlg.Destroy()
-                self.isTranslateDialogShowed = False
+        if word.strip(" \n\r\t") != "":
+            dlg = LinguaLeoDialog(self, word)
+            self.isTranslateDialogShowed = True
+            dlg.Raise()
+            dlg.ShowModal()
+            dlg.Destroy()
+            self.isTranslateDialogShowed = False
 
         if need_play:
             self.on_pause(event)
@@ -466,12 +466,12 @@ class LinguaFrame(wx.Frame):
                 while i < len(self.srtParsed):
                     if self.srtParsed[i].start.ordinal <= offset * 1000 <= self.srtParsed[i].end.ordinal:
                         self.srtIndex = i
-                        self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
+                        self.subtitle_setpage(self.srtParsed[self.srtIndex].text)
                         break
                     i += 1
                 if self.srtIndex != i:
                     self.strIndex = 0
-                    self.subtitle.SetValue("")
+                    self.subtitle_setpage("")
 
     #----------------------------------------------------------------------
     def on_update_playback(self, event):
@@ -504,7 +504,7 @@ class LinguaFrame(wx.Frame):
                     if self.srtParsed[i].start.ordinal <= offset * 1000 <= self.srtParsed[i].end.ordinal:
                         if (i == 0 or i != self.srtIndex):
                             self.srtIndex = i
-                            self.subtitle.SetValue(re.compile(r'<[^>]+>').sub('', self.srtParsed[self.srtIndex].text))
+                            self.subtitle_setpage(self.srtParsed[self.srtIndex].text)
                         break
                     i += 1
 
@@ -586,21 +586,19 @@ class LinguaLeoDialog(wx.Dialog):
 
         translateSizer.Add(self.translateText, 0, wx.ALL | wx.EXPAND, 5)
 
-        self.sourceLangLabel = wx.StaticText(self, wx.ID_ANY, _(u"Source"), wx.DefaultPosition, wx.Size(30, 20), 0)
-        self.sourceLangLabel.Wrap(-1)
+        self.sourceLangLabel, self.sourceLang = self.build_lang_selector(
+            labelTitle=_(u"Source"),
+            comboSelected="en",
+            labelSize=wx.Size(30, 20),
+            comboSize=wx.Size(100, 20)
+        )
 
-        self.sourceLang = combo.BitmapComboBox(self,
-                                               wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(100, 20), "",
-                                               wx.CB_READONLY)
-        self.build_flag_combobox(self.sourceLang, selectedLang=_("en"))
-
-        self.targetLangLabel = wx.StaticText(self, wx.ID_ANY, _(u"Translate"), wx.DefaultPosition, wx.Size(80, 20), 0)
-        self.targetLangLabel.Wrap(-1)
-
-        self.targetLang = combo.BitmapComboBox(self,
-                                               wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(100, 20), "",
-                                               wx.CB_READONLY)
-        self.build_flag_combobox(self.targetLang, selectedLang=_("ru"))
+        self.targetLangLabel, self.targetLang = self.build_lang_selector(
+            labelTitle=_(u"Translate"),
+            comboSelected=_("ru"),
+            labelSize=wx.Size(30, 20),
+            comboSize=wx.Size(100, 20)
+        )
 
         langSizer.Add(self.sourceLangLabel, 1, wx.ALL, 5)
         langSizer.Add(self.sourceLang, 2, wx.ALL, 5)
@@ -638,21 +636,23 @@ class LinguaLeoDialog(wx.Dialog):
         mainSizer.Add(btnSizer, 1, wx.ALL | wx.EXPAND, 5)
 
         self.addButton.Bind(wx.EVT_BUTTON, self.on_add_context)
+        self.cancelButton.Bind(wx.EVT_BUTTON, self.on_close_dialog)
         self.sourceLang.Bind(wx.EVT_COMBOBOX, self.on_change_lang)
         self.targetLang.Bind(wx.EVT_COMBOBOX, self.on_change_lang)
+        self.Bind(wx.EVT_INIT_DIALOG, self.on_init_dialog)
+        self.Bind(wx.EVT_CLOSE, self.on_close_dialog)
 
         self.SetSizer(mainSizer)
         self.Centre(wx.BOTH)
         self.Layout()
 
     #----------------------------------------------------------------------
-    def build_flag_combobox(self, combobox, selectedLang=None):
-        """
+    def build_lang_selector(self, labelTitle='', labelSize=wx.DefaultSize, comboSize=wx.DefaultSize, comboSelected=None):
+        label = wx.StaticText(self, wx.ID_ANY, labelTitle, wx.DefaultPosition, labelSize, 0)
+        label.Wrap(-1)
 
-        @param combobox:
-        @param selectedLang:
-        @return:
-        """
+        combobox = combo.BitmapComboBox(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, comboSize, "", wx.CB_READONLY)
+
         if not isinstance(combobox, combo.BitmapComboBox):
             return
 
@@ -666,14 +666,15 @@ class LinguaLeoDialog(wx.Dialog):
             combobox.Append(langName, bitmap=img)
             i += 1
 
-        if not selectedLang is None:
+        if not comboSelected is None:
             i = 0
             while i < len(LinguaLeoDialog.langISO):
-                if LinguaLeoDialog.langISO[i] == selectedLang:
+                if LinguaLeoDialog.langISO[i] == comboSelected:
                     combobox.SetSelection(i)
                     break
                 i += 1
 
+        return (label, combobox)
     #----------------------------------------------------------------------
     def translate_list(self, translated_value, data):
         """print parameters from list"""
@@ -683,7 +684,7 @@ class LinguaLeoDialog(wx.Dialog):
         return translated_value
 
     def translate(self):
-        text = re.sub(r'[^\w\s"\']+', '', self.sourceText.GetLabelText())
+        text = re.sub(r'[^\w\s"\']+', '', self.sourceText.GetLabelText(), flags=re.UNICODE)
         if not text:
             return False
 
@@ -695,7 +696,7 @@ class LinguaLeoDialog(wx.Dialog):
                           'oe': 'UTF-8',
                           }
 
-        list_of_params.update( {'text': text,
+        list_of_params.update( {'text': text.encode('utf-8'),
                                'sl': LinguaLeoDialog.langISO[self.sourceLang.GetSelection()],
                                'tl': LinguaLeoDialog.langISO[self.targetLang.GetSelection()]} )
 
@@ -729,6 +730,46 @@ class LinguaLeoDialog(wx.Dialog):
         self.translateText.SetLabel(translated_value)
         self.translateText.Wrap(self.translateText.GetSize().width)
 
+    def get_config_path(self):
+        AppName = 'LinguaCinema'
+        if sys.platform == 'darwin':
+            from AppKit import NSSearchPathForDirectoriesInDomains
+            # http://developer.apple.com/DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NSSearchPathForDirectoriesInDomains
+            # NSApplicationSupportDirectory = 14
+            # NSUserDomainMask = 1
+            # True for expanding the tilde into a fully qualified path
+            appdata = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], AppName)
+        elif sys.platform == 'win32':
+            appdata = os.path.join(os.getenv('APPDATA'), AppName)
+        else:
+            appdata = os.path.expanduser(os.path.join("~", AppName))
+        if not os.path.isdir(appdata):
+            os.makedirs(appdata,mode=0777)
+        return appdata
+    #----------------------------------------------------------------------
+    def on_init_dialog(self, event):
+        iniFileName = os.path.join(self.get_config_path(),'LinguaCinema.ini')
+        if os.path.isfile(iniFileName):
+            cfg = ConfigParser.ConfigParser()
+            cfg.read(iniFileName)
+            self.login.SetValue(cfg.get('user','login'))
+            self.password.SetValue(cfg.get('user','password'))
+
+        self.translate()
+        self.addButton.SetFocus()
+
+    #----------------------------------------------------------------------
+    def on_close_dialog(self, event):
+        iniFileName = os.path.join(self.get_config_path(),'LinguaCinema.ini')
+
+        cfg = ConfigParser.ConfigParser()
+        cfg.add_section('user')
+        cfg.set('user','login',self.login.GetValue())
+        cfg.set('user','password',self.password.GetValue())
+        cfg.write(open(iniFileName,'w'))
+
+        event.Skip()
+
     #----------------------------------------------------------------------
     def on_change_lang(self, event):
         self.translate()
@@ -737,8 +778,7 @@ class LinguaLeoDialog(wx.Dialog):
 
     #----------------------------------------------------------------------
     def on_add_context(self, event):
-        parentDlg = self.GetParent()
-        mainWindow = parentDlg.GetParent()
+        mainWindow = self.GetParent()
 
         cookies = cookielib.LWPCookieJar()
         handlers = [
@@ -751,7 +791,7 @@ class LinguaLeoDialog(wx.Dialog):
             params = {'email': self.login.GetValue(),
                       'password': self.password.GetValue()}
             params = dict([k.encode('utf-8'), v.encode('utf-8')] for k, v in params.items())
-            request = urllib2.Request("http://lingualeo.com/api/user/login",
+            request = urllib2.Request("http://api.lingualeo.com/login",
                                       data=urllib.urlencode(params),
                                       headers={'User-Agent': 'LinguaCinema', 'Accept-Charset': 'utf-8'})
             response = opener.open(request)
@@ -761,11 +801,14 @@ class LinguaLeoDialog(wx.Dialog):
             response = response.read()
             user = json.loads(response)
 
-        params = {'word': parentDlg.sourceText.GetLabelText(),
-                  'tword': parentDlg.translateValue,
-                  'context': mainWindow.subtitle.GetValue()}
+            if user['error_msg']:
+                print user['error_msg']
+
+        params = {'word': self.sourceText.GetLabelText(),
+                  'tword': self.translateValue,
+                  'context': mainWindow.subtitle.ToText()}
         params = dict([k.encode('utf-8'), v.encode('utf-8')] for k, v in params.items())
-        request = urllib2.Request("http://lingualeo.com/api/login",
+        request = urllib2.Request("http://api.lingualeo.com/addword",
                                   data=urllib.urlencode(params),
                                   headers={'User-Agent': 'LinguaCinema',
                                            'Accept-Charset': 'utf-8',
@@ -773,7 +816,8 @@ class LinguaLeoDialog(wx.Dialog):
 
         response = opener.open(request)
         addWord = json.loads(response.read())
-        print addWord
+        if addWord['error_msg']:
+            print addWord['error_msg']
 
 
 if __name__ == "__main__":
