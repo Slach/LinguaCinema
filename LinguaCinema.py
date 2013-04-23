@@ -25,7 +25,7 @@ if getattr(sys, 'frozen', None):
     mpc.DEBUG = False
 else:
     linguaBaseDir = os.path.dirname(os.path.abspath(__file__))
-    mpc.DEBUG = False
+    mpc.DEBUG = True
 
 linguaBitmapDir = os.path.join(linguaBaseDir, 'bitmaps')
 _ = wx.GetTranslation
@@ -41,7 +41,12 @@ class LinguaFrame(wx.Frame):
         @param title:
         @param mplayerPath:
         """
-        wx.Frame.__init__(self, parent=parent, id=frame_id, title=title, size=wx.Size(1000, 700))
+        if sys.platform == 'darwin':
+            frameSize = wx.Size(700, 300)
+        else:
+            frameSize = wx.Size(1000, 700)
+
+        wx.Frame.__init__(self, parent=parent, id=frame_id, title=title, size=frameSize)
         self.panel = wx.Panel(self)
 
         sp = wx.StandardPaths.Get()
@@ -66,11 +71,12 @@ class LinguaFrame(wx.Frame):
 
         self.build_controls(controlSizer)
 
-        self.mplayer = mpc.MplayerCtrl(self.panel, -1, mplayerPath,
-                                       mplayer_args=[
-                                           u'--consolecontrols', u'--no-autosub',
-                                           u'--nosub', u'--identify', u'--no-fontconfig'
-                                       ])
+
+        mplayer_args=[
+           u'--no-autosub', u'--nosub', u'--identify', u'--slave', u'--idle'
+        ]
+
+        self.mplayer = mpc.MplayerCtrl(self.panel, -1, mplayerPath, mplayer_args=mplayer_args)
 
         # create volume control
         self.volumeCtrl = wx.Slider(self.panel)
@@ -108,7 +114,10 @@ class LinguaFrame(wx.Frame):
 
         subtitleSizer.Add(self.subtitle, wx.ALL | wx.EXPAND)
 
-        mainSizer.Add(self.mplayer, 1, wx.ALL | wx.EXPAND, 5)
+        if sys.platform == 'darwin':
+            mainSizer.Add(self.mplayer, 0, wx.ALL | wx.EXPAND, 5)
+        else:
+            mainSizer.Add(self.mplayer, 1, wx.ALL | wx.EXPAND, 5)
         mainSizer.Add(subtitleSizer, 0, wx.ALL | wx.EXPAND, 5)
         mainSizer.Add(sliderSizer, 0, wx.ALL | wx.EXPAND, 5)
         mainSizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 5)
@@ -126,10 +135,18 @@ class LinguaFrame(wx.Frame):
 
         self.subtitle.Bind(wx.html.EVT_HTML_CELL_CLICKED, self.on_subtitle_click)
 
-        self.SetMinSize(wx.Size(1000, 700))
+        self.SetMinSize(frameSize)
         self.panel.Layout()
-        self.panel.SetFocus()
-        self.Center()
+        self.mplayer.SetFocus()
+
+        if sys.platform == 'darwin':
+                dw, dh = wx.DisplaySize()
+                w, h = self.GetSize()
+                x = dw / 2 - w / 2
+                y = dh - (h + 20)
+                self.SetPosition((x, y))
+        else:
+            self.Center()
         self.Show()
 
     #----------------------------------------------------------------------
@@ -305,7 +322,7 @@ class LinguaFrame(wx.Frame):
             if os.path.isfile(srtFile):
                 self.open_subtitle(srtFile)
 
-        self.panel.SetFocus()
+        self.mplayer.SetFocus()
 
     #----------------------------------------------------------------------
     def on_media_started(self, event):
@@ -448,7 +465,7 @@ class LinguaFrame(wx.Frame):
         if need_play:
             self.on_pause(event)
 
-        self.subtitle.SetFocus()
+        self.mplayer.SetFocus()
         event.Skip()
 
     #----------------------------------------------------------------------
@@ -824,13 +841,15 @@ if __name__ == "__main__":
     import os, sys
 
     paths = [
-        r'mplayer2.exe',
-        r'mplayer2',
-        r'mplayer.exe',
-        r'mplayer'
-        r'mplayer2'
-        r'/usr/bin/mplayer2'
-        r'/usr/bin/mplayer'
+        r'bin\win32\mplayer2.exe',
+        r'bin\win32\mplayer.exe',
+        r'bin/osx/mplayer2',
+        r'bin/osx/mplayer',
+        r'/usr/bin/mplayer2',
+        r'/usr/bin/mplayer',
+        r'/opt/local/bin/mplayer',
+        r'/opt/local/bin/mplayer2',
+        r'/Applications/mplayer2.app/Contents/MacOS/mplayer2',
         r'C:\Program Files (x86)\Mplayer2\mplayer2.exe',
         r'C:\Program Files\Mplayer2\mplayer2.exe',
         r'C:\Program Files (x86)\Mplayer\mplayer.exe',
@@ -847,6 +866,7 @@ if __name__ == "__main__":
     for path in paths:
         if os.path.exists(path):
             mplayerPath = path
+            print mplayerPath
             break
 
     if not mplayerPath:

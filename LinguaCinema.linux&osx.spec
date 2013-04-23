@@ -10,7 +10,7 @@ a.datas += [
             ('bitmaps/player_stop.png', '../Lingualeo_player/bitmaps/player_stop.png',  'DATA'),
             ('bitmaps/player_pause.png', '../Lingualeo_player/bitmaps/player_pause.png',  'DATA'),
             ('bitmaps/player_replay.png', '../Lingualeo_player/bitmaps/player_replay.png',  'DATA'),
-            ('mplayer2.exe', '../Lingualeo_player/mplayer2.exe',  'DATA'),
+            ('bin/osx/mplayer', '../Lingualeo_player/bin/osx/mplayer',  'DATA'),
             ('favicon.ico', '../Lingualeo_player/favicon.ico',  'DATA'),
             ('mplayer/subfont.ttf', '../Lingualeo_player/mplayer/subfont.ttf',  'DATA'),
             ('bitmaps/flags/en.png', '../Lingualeo_player/bitmaps/flags/en.png',  'DATA'),
