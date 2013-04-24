@@ -25,7 +25,7 @@ if getattr(sys, 'frozen', None):
     mpc.DEBUG = False
 else:
     linguaBaseDir = os.path.dirname(os.path.abspath(__file__))
-    mpc.DEBUG = True
+    mpc.DEBUG = False
 
 linguaBitmapDir = os.path.join(linguaBaseDir, 'bitmaps')
 _ = wx.GetTranslation
@@ -42,7 +42,7 @@ class LinguaFrame(wx.Frame):
         @param mplayerPath:
         """
         if sys.platform == 'darwin':
-            frameSize = wx.Size(700, 300)
+            frameSize = wx.Size(700, 260)
         else:
             frameSize = wx.Size(1000, 700)
 
@@ -116,11 +116,15 @@ class LinguaFrame(wx.Frame):
 
         if sys.platform == 'darwin':
             mainSizer.Add(self.mplayer, 0, wx.ALL | wx.EXPAND, 5)
+            mainSizer.Add(subtitleSizer, 1, wx.ALL | wx.EXPAND, 5)
+            mainSizer.Add(sliderSizer, 0, wx.ALL | wx.EXPAND, 5)
+            mainSizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 5)
         else:
             mainSizer.Add(self.mplayer, 1, wx.ALL | wx.EXPAND, 5)
-        mainSizer.Add(subtitleSizer, 0, wx.ALL | wx.EXPAND, 5)
-        mainSizer.Add(sliderSizer, 0, wx.ALL | wx.EXPAND, 5)
-        mainSizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 5)
+            mainSizer.Add(subtitleSizer, 0, wx.ALL | wx.EXPAND, 5)
+            mainSizer.Add(sliderSizer, 0, wx.ALL | wx.EXPAND, 5)
+            mainSizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 5)
+
         self.panel.SetSizerAndFit(mainSizer)
 
         self.panel.Bind(mpc.EVT_MEDIA_STARTED, self.on_media_started)
@@ -571,10 +575,10 @@ class LinguaLeoDialog(wx.Dialog):
         mainSizer = wx.BoxSizer(wx.VERTICAL)
 
         translateSizer = wx.BoxSizer(wx.VERTICAL)
-        translateSizer.SetMinSize(wx.Size(-1, 400))
+        translateSizer.SetMinSize(wx.Size(-1, 390))
 
         langSizer = wx.BoxSizer(wx.HORIZONTAL)
-        langSizer.SetMinSize(wx.Size(-1, 30))
+        langSizer.SetMinSize(wx.Size(-1, 40))
 
 
         leoSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -606,15 +610,15 @@ class LinguaLeoDialog(wx.Dialog):
         self.sourceLangLabel, self.sourceLang = self.build_lang_selector(
             labelTitle=_(u"Source"),
             comboSelected="en",
-            labelSize=wx.Size(30, 20),
-            comboSize=wx.Size(100, 20)
+            labelSize=wx.Size(30, 30),
+            comboSize=wx.Size(100, 30)
         )
 
         self.targetLangLabel, self.targetLang = self.build_lang_selector(
             labelTitle=_(u"Translate"),
             comboSelected=_("ru"),
-            labelSize=wx.Size(30, 20),
-            comboSize=wx.Size(100, 20)
+            labelSize=wx.Size(30, 30),
+            comboSize=wx.Size(100, 30)
         )
 
         langSizer.Add(self.sourceLangLabel, 1, wx.ALL, 5)
