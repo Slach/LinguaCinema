@@ -1,7 +1,17 @@
-== What is LinguaCinema ==
+## What is LinguaCinema
 
-== Install on Windows ==
+LinguaCinema is a desktop video player. with translate unknown words in subtitles, and adding these words to LinguaLeo.com personal dictionary.
 
-== Install on MacOSX ==
+LinguaCinema powered by mplayer (mplayer2), wxPython, pysrt and 220V ;)
 
-== Install on Debian\Ubuntu ==
+## Manual run on Debian\Ubuntu
+
+git clone https://github.com/Slach/LinguaCinema.git
+cd LinguaCinema
+pip install -r pip-requirements.txt
+python LinguaCinema.py
+
+## Manual run Windows
+
+## Manual run MacOSX
+
