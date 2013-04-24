@@ -44,7 +44,7 @@ class LinguaFrame(wx.Frame):
         if sys.platform == 'darwin':
             frameSize = wx.Size(700, 260)
         else:
-            frameSize = wx.Size(1000, 700)
+            frameSize = wx.Size(1000, 680)
 
         wx.Frame.__init__(self, parent=parent, id=frame_id, title=title, size=frameSize)
         self.panel = wx.Panel(self)
@@ -87,14 +87,16 @@ class LinguaFrame(wx.Frame):
         # create volume control
         self.volumeCtrl = wx.Slider(self.panel)
         self.volumeCtrl.SetRange(0, 100)
+        self.volumeCtrl.SetMinSize(wx.Size(200,-1))
         self.volumeCtrl.SetValue(self.currentVolume)
         self.volumeCtrl.Bind(wx.EVT_SLIDER, self.on_set_volume)
         controlSizer.Add(self.volumeCtrl, 0, wx.ALL, 5)
 
         #audio stream control
         self.audioStreamCtrl = wx.Choice(self.panel, choices=[_('Audio stream')], size=wx.Size(200, -1))
+        self.audioStreamCtrl.SetMinSize(wx.Size(200,-1))
         self.audioStreamCtrl.Bind(wx.EVT_CHOICE, self.on_audio_stream)
-        controlSizer.Add(self.audioStreamCtrl, 0, wx.ALL, 5)
+        controlSizer.Add(self.audioStreamCtrl, 0, wx.ALL | wx.EXPAND, 5)
 
         # create track slider and track counter
         self.timelineCtrl = wx.Slider(self.panel, size=wx.DefaultSize)
