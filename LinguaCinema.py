@@ -71,7 +71,9 @@ class LinguaFrame(wx.Frame):
 
         self.build_controls(controlSizer)
 
-        if not 'mplayer2' in mplayerPath:
+        self.mplayerPath = mplayerPath
+
+        if not 'mplayer2' in self.mplayerPath and sys.platform != 'darwin':
             mplayer_args=[
                u'-noautosub', u'-identify', u'-slave', u'-idle'
             ]
@@ -324,8 +326,10 @@ class LinguaFrame(wx.Frame):
                 dlg.Destroy()
 
             self.timelineCtrl.SetValue(0)
-            print "%r" % self.mediaFile
-            self.mplayer.Loadfile(('ffmpeg://' + self.mediaFile).replace('\\','\\\\'))
+            if 'mplayer2' in self.mplayerPath:
+                self.mplayer.Loadfile(('ffmpeg://' + self.mediaFile).replace('\\','\\\\'))
+            else:
+                self.mplayer.Loadfile(self.mediaFile.replace('\\','\\\\'))
 
             if os.path.isfile(srtFile):
                 self.open_subtitle(srtFile)
