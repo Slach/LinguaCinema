@@ -71,10 +71,14 @@ class LinguaFrame(wx.Frame):
 
         self.build_controls(controlSizer)
 
-
-        mplayer_args=[
-           u'--no-autosub', u'--nosub', u'--identify', u'--slave', u'--idle'
-        ]
+        if not 'mplayer2' in mplayerPath:
+            mplayer_args=[
+               u'-noautosub', u'-identify', u'-slave', u'-idle'
+            ]
+        else:
+            mplayer_args=[
+               u'--no-autosub', u'--nosub', u'--identify', u'--slave', u'--idle'
+            ]
 
         self.mplayer = mpc.MplayerCtrl(self.panel, -1, mplayerPath, mplayer_args=mplayer_args)
 
