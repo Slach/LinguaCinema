@@ -1,6 +1,12 @@
 ## What is LinguaCinema
 
-LinguaCinema is a desktop video player. with translate unknown words in subtitles, and adding these words to LinguaLeo.com personal dictionary.
+LinguaCinema it's cross-platform media file player for Windows, Linux,
+MacOSX 10.7+ which have some specific features needed for language learning:
+
+- download subtitles from http://OpenSubtitles.org in .srt format
+- translate selected word when you left mouse click
+- translate selection from subtitle text  when you right mouse click
+- adding selected words (or phrases) to your personal Lingualeo.com dictionary
 
 LinguaCinema powered by mplayer (mplayer2), wxPython, pysrt and 220V ;)
 
