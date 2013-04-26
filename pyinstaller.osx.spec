@@ -1,7 +1,7 @@
 # -*- mode: python -*-
 a = Analysis(['LinguaCinema.py'],
              pathex=['../Lingualeo_player'],
-             hiddenimports=[],
+             hiddenimports=['encodings','pysrt'],
              hookspath=None)
 a.datas += [
             ('bitmaps/player_next.png', '../Lingualeo_player/bitmaps/player_next.png',  'DATA'),
@@ -31,12 +31,12 @@ pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=1,
-          name=os.path.join('build/pyi.linux&osx/LinguaCinema', 'LinguaCinema'),
-          debug=False,
+          name=os.path.join('build/pyi.osx/LinguaCinema', 'LinguaCinema'),
+          debug=True,
           strip=None,
           upx=True,
           icon="favicon.ico",
-          console=True )
+          console=False )
 
 coll = COLLECT(exe,
                a.binaries,
@@ -44,4 +44,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               name=os.path.join('dist', 'LinguaCinema.linux&osx'))
+               name=os.path.join('dist', 'LinguaCinema.osx'))

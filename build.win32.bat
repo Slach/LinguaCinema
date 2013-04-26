@@ -1,8 +1,8 @@
 #need cygwin for correctly work
-call pyinstaller.bat LinguaCinema.win32.spec
-cd dist/LinguaCinema
+call pyinstaller.bat --windowed pyinstaller.win32.spec
+cd dist/LinguaCinema.win32
 pwd
-rm -rf LinguaCinemaInstall*
+rm -rfv LinguaCinemaInstall*
 7z a -mx9 -r LinguaCinemaInstall.7z
 rm -rfv ../../install/*
 mv -fv LinguaCinemaInstall.7z ../../install/

@@ -15,7 +15,8 @@ import urllib
 import urllib2
 import cookielib
 import json
-import ConfigParser
+import configparser
+import codecs
 import LinguaSubDownloader
 from pysrt import SubRipFile
 
@@ -31,16 +32,21 @@ linguaBitmapDir = os.path.join(linguaBaseDir, 'bitmaps')
 _ = wx.GetTranslation
 
 
-class LinguaFrame(wx.Frame):
+class LinguaCinema(wx.Frame):
+    cfg = configparser.ConfigParser()
+    iniFileName = None
+
     #----------------------------------------------------------------------
     def __init__(self, parent, frame_id, title, mplayerPath):
         """
-
         @param parent:
-        @param id:
+        @param frame_id:
         @param title:
         @param mplayerPath:
         """
+
+        self.load_config()
+
         if sys.platform == 'darwin':
             frameSize = wx.Size(700, 260)
         else:
@@ -49,9 +55,10 @@ class LinguaFrame(wx.Frame):
         wx.Frame.__init__(self, parent=parent, id=frame_id, title=title, size=frameSize)
         self.panel = wx.Panel(self)
 
-        sp = wx.StandardPaths.Get()
         self.SetIcon(wx.Icon("favicon.ico", wx.BITMAP_TYPE_ICO))
-        self.currentFolder = linguaBaseDir if not getattr(sys, 'frozen', None) else sp.GetDocumentsDir()
+
+        self.currentFolder = self.get_current_folder(linguaBaseDir)
+
         self.currentVolume = 80
         self.mediaFile = None
         self.srtFile = None
@@ -121,7 +128,7 @@ class LinguaFrame(wx.Frame):
         self.subtitle.SetFont(wx.Font(14, 74, 90, 90, False, "Consolas"))
 
         subtitleSizer.Add(self.subtitle, wx.ALL | wx.EXPAND)
-
+        #final wxSizer stack
         if sys.platform == 'darwin':
             mainSizer.Add(self.mplayer, 0, wx.ALL | wx.EXPAND, 5)
             mainSizer.Add(subtitleSizer, 1, wx.ALL | wx.EXPAND, 5)
@@ -146,10 +153,10 @@ class LinguaFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_close_window)
 
         self.subtitle.Bind(wx.html.EVT_HTML_CELL_CLICKED, self.on_subtitle_click)
+        self.subtitle.Bind(wx.EVT_RIGHT_DOWN, self.on_subtitle_click)
 
         self.SetMinSize(frameSize)
         self.panel.Layout()
-        self.mplayer.SetFocus()
 
         if sys.platform == 'darwin':
                 dw, dh = wx.DisplaySize()
@@ -159,7 +166,49 @@ class LinguaFrame(wx.Frame):
                 self.SetPosition((x, y))
         else:
             self.Center()
+
+        self.SetFocus()
         self.Show()
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def get_config_path():
+        AppName = 'LinguaCinema'
+        if sys.platform == 'win32':
+            appdata = os.path.join(os.getenv('APPDATA'), AppName)
+        else:
+            appdata = os.path.expanduser(os.path.join("~", AppName))
+
+        if not os.path.isdir(appdata):
+            os.makedirs(appdata,mode=0700)
+        return appdata
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def load_config():
+        LinguaCinema.iniFileName = os.path.join(LinguaCinema.get_config_path(),'LinguaCinema.ini')
+        if os.path.isfile(LinguaCinema.iniFileName):
+            LinguaCinema.cfg.read(LinguaCinema.iniFileName,encoding='utf-8')
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def save_config():
+        LinguaCinema.cfg.write(codecs.open(LinguaCinema.iniFileName,'wb+','utf-8'))
+
+    #----------------------------------------------------------------------
+    def get_current_folder(self, linguaBaseDir):
+        sp = wx.StandardPaths.Get()
+        self.currentFolder = linguaBaseDir if not getattr(sys, 'frozen', None) else sp.GetDocumentsDir()
+
+        if not LinguaCinema.cfg.has_section('media'):
+            LinguaCinema.cfg.add_section('media')
+
+        if LinguaCinema.cfg.has_option('media','currentFolder'):
+            self.currentFolder = LinguaCinema.cfg.get('media','currentFolder')
+        else:
+            LinguaCinema.cfg.set('media','currentFolder',self.currentFolder)
+
+        print 'self.currentFolder = %s' % self.currentFolder
 
     #----------------------------------------------------------------------
     def build_btn(self, png, handler, name, title, builder, sizer, png_toggle=None):
@@ -239,7 +288,10 @@ class LinguaFrame(wx.Frame):
         prev_menu_item = playbackMenu.Append(wx.NewId(), _("&Previous subtitle phrase\tCtrl+P"), _("Previous subtitle phrase"))
         next_menu_item = playbackMenu.Append(wx.NewId(), _("&Next subtitle phrase\tCtrl+N"), _("Next subtitle phrase"))
         replay_menu_item = playbackMenu.Append(wx.NewId(), _("&Replay subtitle phrase\tCtrl+R"), _("Replay subtitle phrase"))
-        pause_menu_item = playbackMenu.Append(wx.NewId(), _("Play/Stop\tCtrl+Space"), _("Play or stop media file"))
+        if sys.platform == 'darwin':
+            pause_menu_item = playbackMenu.Append(wx.NewId(), _("Play/Stop\tAlt+Space"), _("Play or stop media file"))
+        else:
+            pause_menu_item = playbackMenu.Append(wx.NewId(), _("Play/Stop\tCtrl+Space"), _("Play or stop media file"))
         menubar.Append(playbackMenu, _('&Playback'))
 
         self.SetMenuBar(menubar)
@@ -257,7 +309,7 @@ class LinguaFrame(wx.Frame):
 
     #----------------------------------------------------------------------
     def open_subtitle(self, path):
-        print "open subtitle %s" % path
+        #print "open subtitle %s" % unicode(path)
         self.srtFile = path
         try:
             self.srtParsed = SubRipFile.open(self.srtFile)
@@ -265,6 +317,13 @@ class LinguaFrame(wx.Frame):
             self.srtParsed = SubRipFile.open(self.srtFile, encoding='windows-1251')
 
         self.srtIndex = 0
+
+        if not self.mediaFile is None:
+            if not LinguaCinema.cfg.has_section('subtitles'):
+                LinguaCinema.cfg.add_section('subtitles')
+
+            LinguaCinema.cfg.set('subtitles', self.mediaHash, unicode(self.srtFile.strip('"')) )
+
 
         if self.playbackTimer.IsRunning() or not self.mediaFile is None:
             offset = self.timelineCtrl.GetValue()
@@ -307,7 +366,7 @@ class LinguaFrame(wx.Frame):
         wildcard = _("Video files (avi,mkv,mp4,mov)|*.avi;*.mkv;*.mp4;*.mov")
         dlg = wx.FileDialog(
             self, message=_("Choose a file"),
-            defaultDir=self.currentFolder,
+            defaultDir=unicode(self.currentFolder),
             defaultFile="",
             wildcard=wildcard,
             style=wx.OPEN | wx.CHANGE_DIR
@@ -319,6 +378,14 @@ class LinguaFrame(wx.Frame):
             #self.mediaFile = u'"%s"' % path
             self.mediaFile = path
             srtFile = (os.path.splitext(self.mediaFile)[0] + '.srt').strip('"')
+
+            if not LinguaCinema.cfg.has_section('subtitles'):
+                LinguaCinema.cfg.add_section('subtitles')
+
+            self.mediaHash = LinguaSubDownloader.CalculateHashForFile(self.mediaFile.strip('"'))
+            if LinguaCinema.cfg.has_option('subtitles', self.mediaHash):
+                srtFile = LinguaCinema.cfg.get('subtitles', self.mediaHash)
+
             if not os.path.isfile(srtFile):
                 dlg = wx.MessageDialog(self, _('Subtitle file not found download it from http://opensubtitles.org?'),
                                        _('%s not exists') % srtFile, wx.YES_NO | wx.ICON_QUESTION)
@@ -328,7 +395,7 @@ class LinguaFrame(wx.Frame):
                 dlg.Destroy()
 
             self.timelineCtrl.SetValue(0)
-            if 'mplayer2' in self.mplayerPath:
+            if sys.platform == 'win32':
                 self.mplayer.Loadfile(('ffmpeg://' + self.mediaFile).replace('\\','\\\\'))
             else:
                 self.mplayer.Loadfile(self.mediaFile.replace('\\','\\\\'))
@@ -336,7 +403,7 @@ class LinguaFrame(wx.Frame):
             if os.path.isfile(srtFile):
                 self.open_subtitle(srtFile)
 
-        self.mplayer.SetFocus()
+        self.panel.SetFocus()
 
     #----------------------------------------------------------------------
     def on_media_started(self, event):
@@ -555,6 +622,7 @@ class LinguaFrame(wx.Frame):
 
     #----------------------------------------------------------------------
     def on_close_window(self, event):
+        LinguaCinema.save_config()
         self.mplayer.Destroy()
         self.Destroy()
 
@@ -761,45 +829,42 @@ class LinguaLeoDialog(wx.Dialog):
         self.translateText.SetLabel(translated_value)
         self.translateText.Wrap(self.translateText.GetSize().width)
 
-    def get_config_path(self):
-        AppName = 'LinguaCinema'
-        if sys.platform == 'darwin':
-            from AppKit import NSSearchPathForDirectoriesInDomains
-            # http://developer.apple.com/DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NSSearchPathForDirectoriesInDomains
-            # NSApplicationSupportDirectory = 14
-            # NSUserDomainMask = 1
-            # True for expanding the tilde into a fully qualified path
-            appdata = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], AppName)
-        elif sys.platform == 'win32':
-            appdata = os.path.join(os.getenv('APPDATA'), AppName)
-        else:
-            appdata = os.path.expanduser(os.path.join("~", AppName))
-        if not os.path.isdir(appdata):
-            os.makedirs(appdata,mode=0777)
-        return appdata
+    #----------------------------------------------------------------------
+    def set_lang_selection(self, combobox, comboSelected):
+        if not comboSelected is None:
+            i = 0
+            while i < len(LinguaLeoDialog.langISO):
+                if LinguaLeoDialog.langISO[i] == comboSelected:
+                    combobox.SetSelection(i)
+                    break
+                i += 1
+
     #----------------------------------------------------------------------
     def on_init_dialog(self, event):
-        iniFileName = os.path.join(self.get_config_path(),'LinguaCinema.ini')
-        if os.path.isfile(iniFileName):
-            cfg = ConfigParser.ConfigParser()
-            cfg.read(iniFileName)
-            self.login.SetValue(cfg.get('user','login'))
-            self.password.SetValue(cfg.get('user','password'))
+        if LinguaCinema.cfg.has_section('user'):
+            self.login.SetValue(LinguaCinema.cfg.get('user','login'))
+            self.password.SetValue(LinguaCinema.cfg.get('user','password'))
+
+        if LinguaCinema.cfg.has_section('translate'):
+            self.set_lang_selection(self.sourceLang, LinguaCinema.cfg.get('translate','sourceLang'))
+            self.set_lang_selection(self.targetLang, LinguaCinema.cfg.get('translate','targetLang'))
 
         self.translate()
         self.addButton.SetFocus()
 
     #----------------------------------------------------------------------
     def on_close_dialog(self, event):
-        iniFileName = os.path.join(self.get_config_path(),'LinguaCinema.ini')
+        if not LinguaCinema.cfg.has_section('user'):
+            LinguaCinema.cfg.add_section('user')
 
-        cfg = ConfigParser.ConfigParser()
-        cfg.add_section('user')
-        cfg.set('user','login',self.login.GetValue())
-        cfg.set('user','password',self.password.GetValue())
-        cfg.write(open(iniFileName,'w'))
+        LinguaCinema.cfg.set('user','login',self.login.GetValue())
+        LinguaCinema.cfg.set('user','password',self.password.GetValue())
 
-        event.Skip()
+        if not LinguaCinema.cfg.has_section('translate'):
+            LinguaCinema.cfg.add_section('translate')
+
+        LinguaCinema.cfg.set('translate','sourceLang',LinguaLeoDialog.langISO[self.sourceLang.GetSelection()])
+        LinguaCinema.cfg.set('translate','targetLang',LinguaLeoDialog.langISO[self.targetLang.GetSelection()])
 
     #----------------------------------------------------------------------
     def on_change_lang(self, event):
@@ -856,9 +921,8 @@ if __name__ == "__main__":
 
     paths = [
         r'bin\win32\mplayer2.exe',
-        r'bin\win32\mplayer.exe',
-        r'bin/osx/mplayer2',
-        r'bin/osx/mplayer',
+        r'bin\osx\mplayer',
+        r'/usr/bin/mplayer',
         r'/usr/bin/mplayer2',
         r'/usr/bin/mplayer',
         r'/opt/local/bin/mplayer',
@@ -872,8 +936,8 @@ if __name__ == "__main__":
 
     if getattr(sys, 'frozen', None):
         paths.extend([
-            os.path.join(sys._MEIPASS, 'mplayer2.exe'),
-            os.path.join(sys._MEIPASS, 'mplayer2')
+            os.path.join(sys._MEIPASS, 'bin\win32\mplayer2.exe'),
+            os.path.join(sys._MEIPASS, 'bin/osx/mplayer2')
         ])
 
     mplayerPath = None
@@ -898,5 +962,5 @@ if __name__ == "__main__":
     linguaLocale.AddCatalogLookupPathPrefix(localedir)
     linguaLocale.AddCatalog(domain)
 
-    frame = LinguaFrame(None, -1, _('LinguaCinema watch movie and learn language'), mplayerPath)
+    frame = LinguaCinema(None, -1, _('LinguaCinema watch movie and learn language'), mplayerPath)
     app.MainLoop()
