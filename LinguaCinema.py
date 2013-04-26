@@ -55,7 +55,7 @@ class LinguaCinema(wx.Frame):
         wx.Frame.__init__(self, parent=parent, id=frame_id, title=title, size=frameSize)
         self.panel = wx.Panel(self)
 
-        self.SetIcon(wx.Icon("favicon.ico", wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(os.path.join(linguaBaseDir,"favicon.ico"), wx.BITMAP_TYPE_ICO))
 
         self.currentFolder = self.get_current_folder(linguaBaseDir)
 
@@ -80,10 +80,15 @@ class LinguaCinema(wx.Frame):
 
         self.mplayerPath = mplayerPath
 
-        if not 'mplayer2' in self.mplayerPath and sys.platform != 'darwin':
+        if not 'mplayer2' in self.mplayerPath:
             mplayer_args=[
                u'-noautosub', u'-identify', u'-slave', u'-idle'
             ]
+            if sys.platform == 'darwin':
+                mplayer_args.extend([
+                    u'-ao', u'coreaudio',
+                    u'-vo', u'corevideo'
+                ])
         else:
             mplayer_args=[
                u'--no-autosub', u'--nosub', u'--identify', u'--slave', u'--idle'
@@ -120,8 +125,8 @@ class LinguaCinema(wx.Frame):
         #create subtitle control
         self.subtitle = wx.html.HtmlWindow(self.panel, -1, name=_('subtitles'),
                                     style=wx.TE_READONLY | wx.TE_CENTER | wx.TE_WORDWRAP | wx.TE_MULTILINE)
-        self.subtitle.SetBackgroundColour(wx.Color(0, 0, 0))
-        self.subtitle.SetForegroundColour(wx.Color(255, 255, 255))
+        self.subtitle.SetBackgroundColour(wx.Colour(0, 0, 0))
+        self.subtitle.SetForegroundColour(wx.Colour(255, 255, 255))
         self.subtitle.SetPage('<body bgcolor="#000000"></body>')
         self.subtitle.SetFonts('Consolas','Consolas')
         self.subtitle.SetMinSize(wx.Size(-1, 100))
@@ -304,7 +309,7 @@ class LinguaCinema(wx.Frame):
 
     #----------------------------------------------------------------------
     def subtitle_setpage(self,text):
-        html = '<body bgcolor="#000000"><center><font face="consolas" color="#ffffff" size="+2">' + text + '</font></center></body>'
+        html = '<body bgcolor="#000000"><center><font face="Consolas" color="#ffffff" size="+2">' + text + '</font></center></body>'
         self.subtitle.SetPage(html)
 
     #----------------------------------------------------------------------
@@ -668,7 +673,14 @@ class LinguaLeoDialog(wx.Dialog):
         self.sourceText = wx.StaticText(self,
                                         wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(-1, 40), wx.ALIGN_CENTRE)
         self.sourceText.Wrap(-1)
-        self.sourceText.SetFont(wx.Font(14, 74, 90, 90, False, "Consolas"))
+
+        if sys.platform == 'win32':
+            textFont = wx.Font(14, 74, 90, 90, False, "Consolas")
+        else:
+            textFont = wx.Font(14, 74, 90, 90, False, "fixedsys")
+
+        self.sourceText.SetFont(textFont)
+
         self.sourceText.SetForegroundColour(wx.Colour(255, 255, 255))
         self.sourceText.SetBackgroundColour(wx.Colour(0, 0, 0))
         self.sourceText.SetMinSize(wx.Size(-1, 40))
@@ -680,7 +692,7 @@ class LinguaLeoDialog(wx.Dialog):
                                            wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(-1, 200),
                                            wx.ALIGN_LEFT)
         self.translateText.Wrap(-1)
-        self.translateText.SetFont(wx.Font(14, 74, 90, 90, False, "Consolas"))
+        self.translateText.SetFont(textFont)
         self.translateText.SetMinSize(wx.Size(-1, 200))
 
         translateSizer.Add(self.translateText, 0, wx.ALL | wx.EXPAND, 5)
@@ -708,14 +720,11 @@ class LinguaLeoDialog(wx.Dialog):
 
         self.loginLabel = wx.StaticText(self, wx.ID_ANY, _(u"LinguaLeo login"), wx.DefaultPosition,
                                         wx.Size(80, 20), 0)
-        self.loginLabel.Wrap(-1)
+        self.passwordLabel = wx.StaticText(self, wx.ID_ANY, _(u"Password"), wx.DefaultPosition,
+                                            wx.Size(80, 20), 0)
 
-
-        self.passwordLabel = wx.StaticText(self, wx.ID_ANY, _(u"Password"), wx.DefaultPosition, wx.Size(80, 20), 0)
-        self.passwordLabel.Wrap(-1)
-
-        self.login = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(100, 20), 0)
-        self.password = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(100, 20), 0)
+        self.login = wx.TextCtrl(self, -1, wx.EmptyString, wx.DefaultPosition, wx.Size(100, 20), 0)
+        self.password = wx.TextCtrl(self, -1, wx.EmptyString, wx.DefaultPosition, wx.Size(100, 20), 0)
 
         leoSizer.Add(self.loginLabel, 1, wx.ALL, 5)
         leoSizer.Add(self.login, 2, wx.ALL, 5)
@@ -742,15 +751,15 @@ class LinguaLeoDialog(wx.Dialog):
         self.Bind(wx.EVT_CLOSE, self.on_close_dialog)
 
         self.SetSizer(mainSizer)
-        self.Centre(wx.BOTH)
         self.Layout()
+        self.CentreOnScreen()
 
     #----------------------------------------------------------------------
     def build_lang_selector(self, labelTitle='', labelSize=wx.DefaultSize, comboSize=wx.DefaultSize, comboSelected=None):
         label = wx.StaticText(self, wx.ID_ANY, labelTitle, wx.DefaultPosition, labelSize, 0)
         label.Wrap(-1)
 
-        combobox = combo.BitmapComboBox(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, comboSize, "", wx.CB_READONLY)
+        combobox = combo.BitmapComboBox(self, -1, wx.EmptyString, wx.DefaultPosition, comboSize, "", wx.CB_READONLY)
 
         if not isinstance(combobox, combo.BitmapComboBox):
             return
@@ -865,6 +874,7 @@ class LinguaLeoDialog(wx.Dialog):
 
         LinguaCinema.cfg.set('translate','sourceLang',LinguaLeoDialog.langISO[self.sourceLang.GetSelection()])
         LinguaCinema.cfg.set('translate','targetLang',LinguaLeoDialog.langISO[self.targetLang.GetSelection()])
+        event.Skip()
 
     #----------------------------------------------------------------------
     def on_change_lang(self, event):
@@ -919,9 +929,11 @@ class LinguaLeoDialog(wx.Dialog):
 if __name__ == "__main__":
     import os, sys
 
-    paths = [
+    paths = []
+
+    paths.extend([
         r'bin\win32\mplayer2.exe',
-        r'bin\osx\mplayer',
+        r'bin/osx/mplayer',
         r'/usr/bin/mplayer',
         r'/usr/bin/mplayer2',
         r'/usr/bin/mplayer',
@@ -932,12 +944,12 @@ if __name__ == "__main__":
         r'C:\Program Files\Mplayer2\mplayer2.exe',
         r'C:\Program Files (x86)\Mplayer\mplayer.exe',
         r'C:\Program Files\Mplayer\mplayer.exe',
-    ]
+    ])
 
     if getattr(sys, 'frozen', None):
         paths.extend([
             os.path.join(sys._MEIPASS, 'bin\win32\mplayer2.exe'),
-            os.path.join(sys._MEIPASS, 'bin/osx/mplayer2')
+            os.path.join(sys._MEIPASS, 'bin/osx/mplayer')
         ])
 
     mplayerPath = None

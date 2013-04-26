@@ -1,7 +1,7 @@
 # -*- mode: python -*-
 a = Analysis(['LinguaCinema.py'],
              pathex=['../Lingualeo_player'],
-             hiddenimports=['encodings','pysrt'],
+             hiddenimports=[],
              hookspath=None)
 a.datas += [
             ('bitmaps/player_next.png', '../Lingualeo_player/bitmaps/player_next.png',  'DATA'),
@@ -10,9 +10,17 @@ a.datas += [
             ('bitmaps/player_stop.png', '../Lingualeo_player/bitmaps/player_stop.png',  'DATA'),
             ('bitmaps/player_pause.png', '../Lingualeo_player/bitmaps/player_pause.png',  'DATA'),
             ('bitmaps/player_replay.png', '../Lingualeo_player/bitmaps/player_replay.png',  'DATA'),
-#           ('bin/osx/mplayer', '../Lingualeo_player/bin/osx/mplayer',  'DATA'),
+            ('bin/osx/mplayer', '../Lingualeo_player/bin/osx/mplayer',  'DATA'),
+            ('bin/osx/lib/libSDL-1.2.0.dylib', '../Lingualeo_player/bin/osx/lib/libSDL-1.2.0.dylib',  'DATA'),
+            ('bin/osx/lib/libass.4.dylib', '../Lingualeo_player/bin/osx/lib/libass.4.dylib',  'DATA'),
+            ('bin/osx/lib/libfaad.2.dylib', '../Lingualeo_player/bin/osx/lib/libfaad.2.dylib',  'DATA'),
+            ('bin/osx/lib/libfribidi.0.dylib', '../Lingualeo_player/bin/osx/lib/libfribidi.0.dylib',  'DATA'),
+            ('bin/osx/lib/libmp3lame.0.dylib', '../Lingualeo_player/bin/osx/lib/libmp3lame.0.dylib',  'DATA'),
+            ('bin/osx/lib/libogg.0.dylib', '../Lingualeo_player/bin/osx/lib/libogg.0.dylib',  'DATA'),
+            ('bin/osx/lib/libtheora.0.dylib', '../Lingualeo_player/bin/osx/lib/libtheora.0.dylib',  'DATA'),
             ('favicon.ico', '../Lingualeo_player/favicon.ico',  'DATA'),
-#            ('mplayer/subfont.ttf', '../Lingualeo_player/mplayer/subfont.ttf',  'DATA'),
+            ('favicon.icns', '../Lingualeo_player/favicon.icns',  'DATA'),
+#            ('bin/osx/mplayer/subfont.ttf', '../Lingualeo_player/bin/osx/mplayer/subfont.ttf',  'DATA'),
             ('bitmaps/flags/en.png', '../Lingualeo_player/bitmaps/flags/en.png',  'DATA'),
             ('bitmaps/flags/ru.png', '../Lingualeo_player/bitmaps/flags/ru.png',  'DATA'),
             ('bitmaps/flags/es.png', '../Lingualeo_player/bitmaps/flags/es.png',  'DATA'),
@@ -32,10 +40,10 @@ exe = EXE(pyz,
           a.scripts,
           exclude_binaries=1,
           name=os.path.join('build/pyi.osx/LinguaCinema', 'LinguaCinema'),
-          debug=True,
+          debug=False,
           strip=None,
           upx=True,
-          icon="favicon.ico",
+          icon="favicon.icns",
           console=False )
 
 coll = COLLECT(exe,
@@ -45,3 +53,9 @@ coll = COLLECT(exe,
                strip=None,
                upx=True,
                name=os.path.join('dist', 'LinguaCinema.osx'))
+
+app = BUNDLE(coll,
+                 appname='LinguaCinema',
+                 name=os.path.join('dist', 'LinguaCinema.app'),
+                 icon="favicon.icns",
+                 version=1)
