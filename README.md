@@ -4,6 +4,9 @@ LinguaCinema is a desktop video player. with translate unknown words in subtitle
 
 LinguaCinema powered by mplayer (mplayer2), wxPython, pysrt and 220V ;)
 
+## Download Binaries from Google Code
+- http://code.google.com/p/linguacinema/downloads/list
+
 ## Manual run on Debian\Ubuntu
 
 - sudo aptitude install mplayer2
