@@ -3,6 +3,7 @@ call pyinstaller.bat --windowed pyinstaller.win32.spec
 cd dist/LinguaCinema.win32
 pwd
 rm -rfv LinguaCinemaInstall*
+chmod 0755 bin/win32/mplayer2.exe
 7z a -mx9 -r LinguaCinemaInstall.7z
 rm -rfv ../../install/*
 mv -fv LinguaCinemaInstall.7z ../../install/

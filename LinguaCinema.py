@@ -931,20 +931,30 @@ if __name__ == "__main__":
 
     paths = []
 
-    paths.extend([
-        r'bin\win32\mplayer2.exe',
-        r'bin/osx/mplayer',
-        r'/usr/bin/mplayer',
-        r'/usr/bin/mplayer2',
-        r'/usr/bin/mplayer',
-        r'/opt/local/bin/mplayer',
-        r'/opt/local/bin/mplayer2',
-        r'/Applications/mplayer2.app/Contents/MacOS/mplayer2',
-        r'C:\Program Files (x86)\Mplayer2\mplayer2.exe',
-        r'C:\Program Files\Mplayer2\mplayer2.exe',
-        r'C:\Program Files (x86)\Mplayer\mplayer.exe',
-        r'C:\Program Files\Mplayer\mplayer.exe',
-    ])
+    if 'darwin' in sys.platform:
+        paths.extend([
+            r'bin/osx/mplayer',
+            r'/usr/bin/mplayer',
+            r'/usr/bin/mplayer2',
+            r'/usr/local/bin/mplayer',
+            r'/opt/local/bin/mplayer',
+            r'/opt/local/bin/mplayer2',
+            r'/Applications/mplayer2.app/Contents/MacOS/mplayer2',
+        ])
+    elif 'linux' in sys.platform:
+        paths.extend([
+            r'/usr/bin/mplayer',
+            r'/usr/bin/mplayer2',
+            r'/usr/local/bin/mplayer',
+        ])
+    else:
+        paths.extend([
+            r'bin\win32\mplayer2.exe',
+            r'C:\Program Files (x86)\Mplayer2\mplayer2.exe',
+            r'C:\Program Files\Mplayer2\mplayer2.exe',
+            r'C:\Program Files (x86)\Mplayer\mplayer.exe',
+            r'C:\Program Files\Mplayer\mplayer.exe',
+        ])
 
     if getattr(sys, 'frozen', None):
         paths.extend([
@@ -954,7 +964,7 @@ if __name__ == "__main__":
 
     mplayerPath = None
     for path in paths:
-        if os.path.exists(path):
+        if os.path.isfile(path) and os.access(path, os.X_OK):
             mplayerPath = path
             print mplayerPath
             break
