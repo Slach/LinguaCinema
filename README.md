@@ -15,15 +15,19 @@ LinguaCinema powered by mplayer (mplayer2), wxPython, pysrt and 220V ;)
 
 ## Manual run on Debian\Ubuntu
 
-    sudo aptitude install mplayer2
+    sudo aptitude install mplayer2 python-wxgtk2.8
     git clone https://github.com/Slach/LinguaCinema.git
     cd LinguaCinema
-    pip install -r pip-requirements.txt
+    pip install MPlayerCtrl
+    pip install pysrt
+    pip install configparser
+    pip install codecs
     python LinguaCinema.py
 
 ## Manual run Windows
 
 download and install python from http://python.org
+download and install wxPython2.8 fomr http://wxpython.org/
 run easy_install.exe pip
 
     git clone https://github.com/Slach/LinguaCinema.git
@@ -35,6 +39,7 @@ run easy_install.exe pip
 ## Manual run MacOSX
 
 install Mac Ports or Homebrew
+download and install wxPython2.8 fomr http://wxpython.org/
 
     sudo port install mplayer (maybe brew install mplayer)
     git clone https://github.com/Slach/LinguaCinema.git
