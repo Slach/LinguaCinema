@@ -671,7 +671,7 @@ class LinguaLeoDialog(wx.Dialog):
         btnSizer.SetMinSize(wx.Size(-1, 40))
 
         self.sourceText = wx.StaticText(self,
-                                        wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(-1, 40), wx.ALIGN_CENTRE)
+                                        wx.ID_ANY, selectedText, wx.DefaultPosition, wx.Size(-1, 40), wx.ALIGN_CENTRE)
         self.sourceText.Wrap(-1)
 
         if sys.platform == 'win32':
@@ -681,10 +681,13 @@ class LinguaLeoDialog(wx.Dialog):
 
         self.sourceText.SetFont(textFont)
 
-        self.sourceText.SetForegroundColour(wx.Colour(255, 255, 255))
-        self.sourceText.SetBackgroundColour(wx.Colour(0, 0, 0))
+        if 'linux' in sys.platform:
+            self.sourceText.SetForegroundColour(wx.Colour(0, 0, 0))
+        else:
+            self.sourceText.SetForegroundColour(wx.Colour(255, 255, 255))
+            self.sourceText.SetBackgroundColour(wx.Colour(0, 0, 0))
+
         self.sourceText.SetMinSize(wx.Size(-1, 40))
-        self.sourceText.SetLabel(selectedText)
 
         translateSizer.Add(self.sourceText, 0, wx.ALL | wx.EXPAND, 5)
 

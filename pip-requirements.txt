@@ -1,5 +1,4 @@
 MPlayerCtrl
 pysrt
-wxPython
 configparser
 codecs

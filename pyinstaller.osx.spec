@@ -82,7 +82,7 @@ pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=1,
-          name=os.path.join('build/pyi.osx/LinguaCinema', 'LinguaCinema'),
+          name=os.path.join('build/pyi.darwin/LinguaCinema', 'LinguaCinema'),
           debug=False,
           strip=None,
           upx=True,
