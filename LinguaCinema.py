@@ -317,7 +317,7 @@ class LinguaCinema(wx.Frame):
         #print "open subtitle %s" % unicode(path)
         self.srtFile = path
         try:
-            self.srtParsed = SubRipFile.open(self.srtFile)
+            self.srtParsed = SubRipFile.open(self.srtFile, encoding='utf-8')
         except UnicodeDecodeError:
             self.srtParsed = SubRipFile.open(self.srtFile, encoding='windows-1251')
 
@@ -350,7 +350,7 @@ class LinguaCinema(wx.Frame):
         wildcard = _("Subtitles Files (*.srt)|*.srt")
         dlg = wx.FileDialog(
             self, message=_("Choose a file"),
-            defaultDir=self.currentFolder,
+            defaultDir=unicode(self.currentFolder),
             defaultFile="",
             wildcard=wildcard,
             style=wx.OPEN | wx.CHANGE_DIR
