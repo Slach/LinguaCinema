@@ -113,7 +113,7 @@ class LinguaCinema(wx.Frame):
         # create track slider and track counter
         self.timelineCtrl = wx.Slider(self.panel, size=wx.DefaultSize)
         self.timelineCtrl.Bind(wx.EVT_SLIDER, self.on_set_timepos)
-        self.trackCounter = wx.StaticText(self.panel, label="00:00")
+        self.trackCounter = wx.StaticText(self.panel, label="00:00:00")
 
         sliderSizer.Add(self.timelineCtrl, 1, wx.ALL | wx.EXPAND, 5)
         sliderSizer.Add(self.trackCounter, 0, wx.ALL | wx.CENTER, 5)
@@ -445,7 +445,7 @@ class LinguaCinema(wx.Frame):
         if (not self.srtFile is None) and (not self.srtParsed is None):
             offset = self.srtParsed[self.srtIndex].start.ordinal / 1000
             self.timelineCtrl.SetValue(offset)
-            secsPlayed = time.strftime('%M:%S', time.gmtime(offset))
+            secsPlayed = time.strftime('%H:%M:%S', time.gmtime(offset))
             self.trackCounter.SetLabel(secsPlayed)
             self.mplayer.SetProperty('time_pos', offset)
             self.subtitle_setpage(self.srtParsed[self.srtIndex].text)
@@ -558,7 +558,7 @@ class LinguaCinema(wx.Frame):
     def on_set_timepos(self, event):
         offset = self.timelineCtrl.GetValue()
         if self.playbackTimer.IsRunning():
-            secsPlayed = time.strftime('%M:%S', time.gmtime(offset))
+            secsPlayed = time.strftime('%H:%M:%S', time.gmtime(offset))
             self.trackCounter.SetLabel(secsPlayed)
             self.mplayer.SetProperty('time_pos', offset)
 
@@ -599,7 +599,7 @@ class LinguaCinema(wx.Frame):
             offset = int(offset)
             self.timelineCtrl.SetValue(offset)
 
-            secsPlayed = time.strftime('%M:%S', time.gmtime(offset))
+            secsPlayed = time.strftime('%H:%M:%S', time.gmtime(offset))
             self.trackCounter.SetLabel(secsPlayed)
             if (not self.srtFile is None) and (not self.srtParsed is None):
                 i = self.srtIndex
