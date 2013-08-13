@@ -1,4 +1,4 @@
 MPlayerCtrl
 pysrt
 configparser
-codecs
+iconv_codecs
