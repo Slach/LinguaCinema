@@ -317,7 +317,7 @@ class LinguaCinema(wx.Frame):
         #print "open subtitle %s" % unicode(path)
         self.srtFile = path
         try:
-            self.srtParsed = SubRipFile.open(self.srtFile, encoding='utf-8')
+            self.srtParsed = SubRipFile.open(self.srtFile, encoding='UTF-8')
         except UnicodeDecodeError:
             self.srtParsed = SubRipFile.open(self.srtFile, encoding='windows-1251')
 
