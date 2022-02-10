@@ -97,8 +97,9 @@ def getlanguageDict():
     languageDict = {}
 
     for lang in [x for x in dir(wx) if x.startswith("LANGUAGE")]:
-        i = wx.Locale(wx.LANGUAGE_DEFAULT).GetLanguageInfo(getattr(wx, lang))
-        if i:
+        if i := wx.Locale(wx.LANGUAGE_DEFAULT).GetLanguageInfo(
+            getattr(wx, lang)
+        ):
             languageDict[i.CanonicalName] = i.Description
 
     return languageDict
@@ -328,10 +329,7 @@ def fileBaseOf(filename, withPath=0):
     pos = filename.rfind('.')
     if pos > 0:
         filename = filename[:pos]
-    if withPath:
-        return filename
-    else:
-        return os.path.basename(filename)
+    return filename if withPath else os.path.basename(filename)
 
 # -----------------------------------------------------------------------------
 # m k d i r ( )         -- Create a directory (and possibly the entire tree) --
@@ -356,17 +354,13 @@ def mkdir(directory):
     theLen = len(aList)
     # if the first element is a Windows-style disk drive
     # concatenate it with the first directory
-    if aList[0].endswith(':'):
-        if theLen > 1:
-            aList[1] = aList[0] + '/' + aList[1]
-            del aList[0]
-            theLen -= 1
-            # if the original directory starts at root,
-            # make sure the first element of the list
-        # starts at root too
+    if aList[0].endswith(':') and theLen > 1:
+        aList[1] = f'{aList[0]}/{aList[1]}'
+        del aList[0]
+        theLen -= 1
     if directory[0] == '/':
-        aList[0] = '/' + aList[0]
-        # Now iterate through the list, check if the
+        aList[0] = f'/{aList[0]}'
+            # Now iterate through the list, check if the
     # directory exists and if not create it
     theDir = ''
     for i in range(theLen):
@@ -391,10 +385,7 @@ def unixpath(thePath):
     >>>
     """
     thePath = os.path.normpath(thePath)
-    if os.sep == '/':
-        return thePath
-    else:
-        return thePath.replace(os.sep, '/')
+    return thePath if os.sep == '/' else thePath.replace(os.sep, '/')
 
 # -----------------------------------------------------------------------------
 
