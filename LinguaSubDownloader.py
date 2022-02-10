@@ -40,9 +40,7 @@ def QueryOpenSubtitles(movie_filenames, language):
             ]
 
             response = server.SearchSubtitles(token, search_queries)
-            search_results = response['data']
-
-            if search_results:
+            if search_results := response['data']:
                 result[movie_filename] = search_results
 
         return result
@@ -61,12 +59,18 @@ def FindBestSubtitleMatches(movie_filenames, language):
         search_results = all_search_results.get(movie_filename, [])
         possibilities = [search_result['SubFileName'] for search_result in search_results]
         basename = os.path.splitext(os.path.basename(movie_filename))[0]
-        closest_matches = difflib.get_close_matches(basename, possibilities)
-        if closest_matches:
+        if closest_matches := difflib.get_close_matches(
+            basename, possibilities
+        ):
             filtered = [x for x in search_results if x['SubFileName'] in closest_matches]
             filtered.sort(key=lambda x: (closest_matches.index(x['SubFileName']), -x['SubDownloadsCnt']))
             search_result = filtered[0]
-            yield movie_filename, search_result['SubDownloadLink'], '.' + search_result['SubFormat']
+            yield (
+                movie_filename,
+                search_result['SubDownloadLink'],
+                f'.{search_result["SubFormat"]}',
+            )
+
         else:
             yield movie_filename, None, None
 
@@ -159,11 +163,7 @@ def HasSubtitle(filename):
     # formats = ['.sub', '.srt', '.ssa', '.smi', '.mpl']
     formats = ['.srt']
     basename = os.path.splitext(filename)[0]
-    for ext in formats:
-        if os.path.isfile(basename + ext):
-            return True
-
-    return False
+    return any(os.path.isfile(basename + ext) for ext in formats)
 
 
 #===================================================================================================
@@ -185,31 +185,28 @@ def CalculateHashForFile(name):
     longlongformat = 'q'  # long long
     bytesize = struct.calcsize(longlongformat)
 
-    f = open(name, "rb")
+    with open(name, "rb") as f:
+        filesize = os.path.getsize(name)
+        movie_hash = filesize
 
-    filesize = os.path.getsize(name)
-    movie_hash = filesize
+        if filesize < 65536 * 2:
+            return "SizeError"
 
-    if filesize < 65536 * 2:
-        return "SizeError"
+        for _ in range(65536 / bytesize):
+            movie_buffer = f.read(bytesize)
+            (l_value,) = struct.unpack(longlongformat, movie_buffer)
+            movie_hash += l_value
+            #to remain as 64bit number
+            movie_hash &= 0xFFFFFFFFFFFFFFFF
 
-    for x in range(65536 / bytesize):
-        movie_buffer = f.read(bytesize)
-        (l_value,) = struct.unpack(longlongformat, movie_buffer)
-        movie_hash += l_value
-        #to remain as 64bit number
-        movie_hash &= 0xFFFFFFFFFFFFFFFF
+        f.seek(max(0, filesize - 65536), 0)
+        for _ in range(65536 / bytesize):
+            movie_buffer = f.read(bytesize)
+            (l_value,) = struct.unpack(longlongformat, movie_buffer)
+            movie_hash += l_value
+            movie_hash &= 0xFFFFFFFFFFFFFFFF
 
-    f.seek(max(0, filesize - 65536), 0)
-    for x in range(65536 / bytesize):
-        movie_buffer = f.read(bytesize)
-        (l_value,) = struct.unpack(longlongformat, movie_buffer)
-        movie_hash += l_value
-        movie_hash &= 0xFFFFFFFFFFFFFFFF
-
-    f.close()
-    returnedhash = "%016x" % movie_hash
-    return returnedhash
+    return "%016x" % movie_hash
 
 
 #===================================================================================================
@@ -218,8 +215,7 @@ def CalculateHashForFile(name):
 def DownloadSubtitleForMovie(filename, language):
     def PrintStatus(text, status):
         spaces = 70 - len(text)
-        if spaces < 2:
-            spaces = 2
+        spaces = max(spaces, 2)
         sys.stdout.write('%s%s%s\n' % (text, ' ' * spaces, status))
 
     input_filenames = list(FindMovieFiles([filename], recursive=False))

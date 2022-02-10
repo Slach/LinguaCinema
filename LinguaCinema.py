@@ -23,11 +23,9 @@ from pysrt import SubRipFile
 
 if getattr(sys, 'frozen', None):
     linguaBaseDir = sys._MEIPASS
-    mpc.DEBUG = False
 else:
     linguaBaseDir = os.path.dirname(os.path.abspath(__file__))
-    mpc.DEBUG = False
-
+mpc.DEBUG = False
 linguaBitmapDir = os.path.join(linguaBaseDir, 'bitmaps')
 _ = wx.GetTranslation
 
